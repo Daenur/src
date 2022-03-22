@@ -1,0 +1,109 @@
+
+.form{
+    position: absolute;
+    width: 434px;
+    height: 380px;
+    left: 523px;
+    top: 124px;
+
+    background: #2B3138;
+    border-radius: 50px;
+}
+
+.email {
+    position: absolute;
+    width: 258px;
+    height: 38px;
+    left: 83px;
+    top: 157px;
+
+
+    background: #2B3138;
+    border: 1px solid #3E4751;
+    box-sizing: border-box;
+    border-radius: 10px;
+}
+
+.password {
+    position: absolute;
+    width: 258px;
+    height: 38px;
+    left: 83px;
+    top: 237px;
+
+
+    background: #2B3138;
+    border: 1px solid #3E4751;
+    box-sizing: border-box;
+    border-radius: 10px;
+}
+
+.submit {
+    position: absolute;
+    width: 108px;
+    height: 38px;
+    left: 153px;
+    top: 307px;
+
+    background: #383F48;
+    border: 1px solid #3E4751;
+    box-sizing: border-box;
+    border-radius: 10px;
+}
+
+.labelAuto{
+    position: absolute;
+    width: 153px;
+    height: 30px;
+    left: 130px;
+    top: 120px;
+
+    font-family: Open Sans;
+    font-style: normal;
+    font-weight: bold;
+    font-size: 22px;
+    line-height: 30px;
+    /* identical to box height */
+
+
+    color: #E5E5E5;
+
+    mix-blend-mode: normal;
+    box-sizing: border-box;
+}
+.logoAuto{
+    position: absolute;
+    width: 183px;
+    height: 100px;
+    left: 120px;
+    top: 41px;
+}
+
+.navbar_login{
+    position: absolute;
+    width: 15.75px;
+    height: 18px;
+    left: 1330px;
+    top: 7px;
+}
+.form input{padding: 5px;color: #C5C5C5;}
+
+.logoSwitcher{
+    position: absolute;
+    width: 100px;
+    height: 22px;
+    left: 14px;
+    top: 7px;
+}
+
+.form   a {
+    text-decoration: none;
+    color: #C5C5C5;
+}
+
+li
+{
+
+    background: #3E4751;
+    color:#4DB6BC;
+}
