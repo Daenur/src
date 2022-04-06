@@ -1,5 +1,4 @@
-import React, { useState,useEffect,Component,memo,useCallback }  from 'react';
-
+import React, { useState,useEffect,Component,memo,useCallback,useContext,createContext }  from 'react';
 import * as XLSX from 'xlsx';
 import FileSaver from 'file-saver';
 import Tree from 'react-animated-tree-v2'
@@ -12,14 +11,343 @@ import { IntlProvider } from 'react-intl'
 import { FormattedMessage} from 'react-intl'
 import styled from 'styled-components'
 import '../node_modules/bootstrap/dist/css/bootstrap.min.css'
+import './newTable.css'
 import Tabs from "./tab"
 import { useTable, useBlockLayout, useResizeColumns } from 'react-table'
+import { createStore} from "redux";
+import { connect,Provider} from "react-redux";
+import { Map } from 'immutable';
 
+import FunctionalDataGrid, { Column, Group, Sort, filterRenderers, utils, ColumnGroup} from 'functional-data-grid'
+
+document.addEventListener("click",function(e)
+{
+	
+		if (e.target.getAttribute('idgrid')!=null) {targetId=(e.target.getAttribute('idgrid')); alert('targetId='+targetId)}
+});
+var targetId='';
+var targetDevis_id;
+var targetPath=''
+var exampleData;
+const SelectFilter = filterRenderers.SelectFilter
+const UserContext=createContext();
+let setstatebase=''
+let probehooks='';
+let columns = [
+  new Column({
+    id : 'id_area',
+    title: 'id_area',
+    width: 120,
+		      renderer : (v, e) => <a href={ e.url } idgrid={v} target={"blank"}>{ v }</a>,
+      filterable : true,
+	  sortable : true,
+    valueGetter: e => e.id_area
+  }),
+  new Column({
+    id : 'country',
+    title: 'country',
+    width: 120,
+		      renderer : (v, e) => <a href={ e.url } target={"blank"}>{ v }</a>,
+      filterable : true,
+	  sortable : true,
+    valueGetter: e => e.country,
+  }),
+      new Column({
+    id : 'devis',
+    title: 'devis',
+    width: 120,
+		      renderer : (v, e) => <a href={ e.url } target={"blank"}>{ v }</a>,
+      filterable : true,
+	  sortable : true,
+    valueGetter: e => e.devis,
+  }),
+    new Column({
+    id : 'name_full',
+    title: 'name_full',
+    width: 120,
+    valueGetter: e => e.name_full,
+	      renderer : (v, e) => <a href={ e.url } target={"blank"}>{ v }</a>,
+      filterable : true,
+      sortable : true,
+      resizable : true,
+  }),
+    new Column({
+    id : 'name_shot',
+    title: 'name_shot',
+    width: 120,
+	renderer : (v, e) => <a href={ e.url }  target={"blank"}>{ v }</a>,
+      filterable : true,
+	  sortable : true,
+    valueGetter: e => e.name_shot,
+  }),
+  
+    new Column({
+    id : 'code_devision',
+    title: 'code_devision',
+    width: 120,
+		      renderer : (v, e) => <a href={ e.url } target={"blank"}>{ v }</a>,
+      filterable : true,
+	  sortable : true,
+    valueGetter: e => e.code_devision,
+  }),
+      new Column({
+    id : 'date_start',
+    title: 'date_start',
+    width: 120,
+		      renderer : (v, e) => <a href={ e.url } target={"blank"}>{ v }</a>,
+      filterable : true,
+	  sortable : true,
+    valueGetter: e => e.date_start,
+  }),
+      new Column({
+    id : 'date_end',
+    title: 'date_end',
+    width: 120,
+		      renderer : (v, e) => <a href={ e.url } target={"blank"}>{ v }</a>,
+      filterable : true,
+	  sortable : true,
+    valueGetter: e => e.date_start,
+  }),
+      new Column({
+    id : 'shape',
+    title: 'shape',
+    width: 120,
+		      renderer : (v, e) => <a href={ e.url } target={"blank"}>{ v }</a>,
+      filterable : true,
+	  sortable : true,
+    valueGetter: e => e.shape,
+  }),
+  //    new Column({
+   // id : 'shape',
+    //title: 'shape',
+   // width: 120,
+//		      renderer : (v, e) => <a href={ e.url } target={"blank"}>{ v }</a>,
+ //     filterable : true,
+//	  sortable : true,
+ //   valueGetter: e => e.shape,
+ // })
+]
+let gridData=[]
+var targetDevis;
+var arrayDevis=[]
 var arraycart = [];
 var arraycarh = [];
 var arraybool=0;
+var currentDistrict='Select area...'
+var currentDistrict_id;
+const _ = require("lodash");
+const Immutable = require('immutable');
+const ADD = "add";
+const CLEAR = "clear";
+const TOGGLE = "toggle";
+const DEL = "del";
+const UPDATE = "update";
+function act_toggle(path) {
+return { type: TOGGLE, payload: path };
+}
+function act_clear(path) {
+return { type: CLEAR, payload: path };
+}
+function act_del(path,id) {
+return { type: DEL, payload:{path:Immutable.fromJS(path),id:id} };
+}
+function act_update(path,id,name) {
+return { type: UPDATE, payload:{path:Immutable.fromJS(path),id:id,name:name} };
+}
+function act_add(text, path,id,devis) {
+return { type: ADD, payload: { path: Immutable.fromJS(path), text: text,id:id,devis:devis }};
+}
+	var select=document.getElementById('setDataGrid')
+var initialState = Immutable.fromJS({
+text: "India",
+childNodes: [],
+expanded: false,
+path: [],
+id:"0",
+devis:0,
+});
+
+function pathForUpdate(ipath) {
+var path = ipath.toJS();
+var keys = _.range(path.length).map(() => 'childNodes' );
+return _.flatten(_.zip(keys, path));
+}
+
+function generateNode(data, idx) {
+if ( ! _.isNumber(idx) ) { throw "Invalid Index: " + idx }
+
+return Immutable.fromJS({
+text: data.text,
+id:data.id,
+devis:data.devis,
+childNodes: [],
+expanded: false,
+path: data.path.push(idx),
+});
+}
 
 
+function reducer(state = Immutable.fromJS(initialState), action) {
+var path;
+switch(action.type) {
+case ADD:
+path = pathForUpdate(action.payload.path);
+return state.updateIn(path,
+(node) => node.update('childNodes',
+(list) => list.push(generateNode(action.payload, list.size))) );
+case TOGGLE:
+path = pathForUpdate(action.payload);
+return state.updateIn(path, (node) => node.update('expanded', (val) => ! val ));
+case CLEAR:
+path = pathForUpdate(action.payload);
+return state.updateIn(path,
+(node) => node.update('childNodes',
+(list) => list.slice(0,0)) );
+case UPDATE:
+path = pathForUpdate(action.payload.path);
+return state.updateIn(path,
+(node) => node.update('childNodes',
+(list) => reducerUpdate(list,action.payload.id,action.payload.name)) );
+case DEL:
+path = pathForUpdate(action.payload.path);
+return state.updateIn(path,
+(node) => node.update('childNodes',
+(list) => reducerDelete(list,action.payload.id)) );
+default:
+return state;
+}
+}
+
+function reducerDelete(list,id_d)
+{
+	return list.filter(list => list.get('id') !== id_d);
+}
+
+function reducerUpdate(list,id_d,name)
+{
+	console.log(list)
+	alert(list)
+	for (var i=0;i<list.length;i++)
+	{
+		alert(list[i]+'='+id_d)
+		//if (list[i].get(id_area)==id_d) {alert('FIND!'); list[i].text=name;}
+	}
+	return list;
+}
+
+function ReduxAtdtable(id,childText,devis,path)
+{	
+currentDistrict_id=id
+if (arrayDevis.length>devis) {targetDevis=(arrayDevis[devis].name_devis)
+	targetDevis_id=devis;
+targetPath=path
+targetId=''
+currentDistrict=childText;
+if (id!=0) {fetch("http://localhost:3001/dist/:"+id.replace(/^"|"$/g, ''))
+                            .then(response =>  response.text())
+                            .then(data => {	
+						gridData=JSON.parse(data)
+							if (select==null) select=document.getElementById('setDataGrid'); 
+							select.click()						
+                            })
+}
+else {
+		                fetch('http://localhost:3001/state/')
+                    .then(response =>  response.text())
+                    .then(data => {
+						gridData=JSON.parse(data)
+						console.log(gridData)
+							if (select==null) select=document.getElementById('setDataGrid'); 
+							select.click()
+					});
+}
+} else alert('No lvl from type_devis')
+return 0;
+}
+
+
+
+
+function atdChild(path,id,devis)
+{
+	store.dispatch(act_clear(path));
+	 fetch("http://localhost:3001/atdchild/:"+id.replace(/^"|"$/g, ''))
+                            .then(response =>  response.text())
+                            .then(data => {
+								var childArray=data.substr(1,data.length-2).split(",");
+								 for (let i = 0; i < childArray.length; i=i+2) {
+								 childArray[i]=childArray[i].split(":").at(1);
+								  childArray[i+1]=childArray[i+1].split(":").at(1);
+								  childArray[i+1]=childArray[i+1].slice(1,-2);
+								 store.dispatch(act_add(childArray[i+1],path,childArray[i],devis));
+								 }
+                            })
+	
+
+return 0;	
+}
+
+
+class Node extends React.Component{
+toggle(path,id,devis,text) {
+if (id!=0)	{
+	if (text=='+') { 
+	console.log(store.getState())
+atdChild(path,id,devis+1);}}
+this.props.toggle(path);
+}
+shouldComponentUpdate(nextProps, nextState) {
+return ! Immutable.is(nextProps.item, this.props.item);
+}
+divStyle(item) {
+var indent = item.get('path').size;
+return {
+marginLeft: (indent * 10) + "px"
+};
+}
+renderChild(item) {
+return <Node item={item} toggle={this.props.toggle} />
+}
+render() {
+var item = this.props.item
+//var disabled = item.get('childNodes').size == 0;
+var collapsed = ! item.get('expanded');
+var text = disabled ? "" : collapsed ? "+" : "-";
+var disabled = false;
+return <div style={this.divStyle(item)}>
+<button disabled={disabled}
+onClick={this.toggle.bind(this, item.get('path'),item.get('id'),item.get('devis'),text)}>{text}</button>
+<span onClick={()=>ReduxAtdtable(item.get('id'),item.get('text'),item.get('devis'),item.get('path'))}>{item.get('text')}</span>
+{item.get('expanded') ? item.get('childNodes').map(this.renderChild, this) : false }
+</div>
+}
+}
+class App extends React.Component{
+constructor(props) {
+
+super(props);
+this.state = {item: props.store.getState()};
+}
+
+componentDidMount() {
+this.props.store.subscribe(this.storeUpdated.bind(this));
+}
+storeUpdated() {
+this.setState({item: this.props.store.getState()});
+}
+toggle(path) {
+this.props.store.dispatch(act_toggle(path));
+}
+render() {
+
+return <div>
+<Node item={this.state.item} toggle={this.toggle.bind(this)} />
+</div>
+}
+}
+
+var store = createStore(reducer);
+//--------------------------------------------------------------------------------------------------
 const Styles = styled.div`
   padding: 1rem;
 
@@ -184,11 +512,13 @@ function Example(props) {
                 {props.text}
             </button>
             <Modal
+			id_p={props.id_p}
+			id_dtype={props.id_dtype}
                 subcrop={props.subcrop}
                 subseason={props.subseason}
                 subarea={props.subarea}
                 render={props.render}
-                textnum={props.textnum}
+                textnum={targetId}
                 truestatus={props.truestatus}
                 status={props.status}
                 curs={props.curs}
@@ -216,6 +546,7 @@ const treeStyles = {
 class Board extends Component {
 
     constructor(props) {
+		
         super(props);
         this.state = {
             showModal: false,
@@ -227,8 +558,8 @@ class Board extends Component {
             tableview: '',
             statebase: '',
             districtbase: '',
-            curt: "",
-            curs: "",
+            curt: 'Select area...',
+            curs: '',
             curcol: "Nan",
             textnum: "NaN",
             textrow: "",
@@ -244,11 +575,12 @@ class Board extends Component {
             checkseason:"",
             checkcrop:"",
             auth:"close",
+			columnsBoard:columns
         }
         ;
 
 
-
+	
         let arraytable=[''];
         fetch('http://localhost:3001/')
             .then(response =>  response.text())
@@ -275,11 +607,10 @@ class Board extends Component {
                         .then(data => {
                             arraytablef[i] = '';
                             arraytablef[i] = data.split(",");
-                            this.setkek(arraytablef, arraytable);
                         });
 
                 }
-                fetch('http://localhost:3001/table/:state.:atd')
+                fetch('http://localhost:3001/country/')
                     .then(response =>  response.text())
                     .then(data => {
                         let regexp=(data.split(/\[(.+?)\]/));
@@ -288,10 +619,10 @@ class Board extends Component {
                         let regarrows=[];
                         let cou=0;
                         for (let i = 0; i < regexpf.length; i++) {
-                            if (regexpf[i].length>1) {regarrows[cou]=regexpf[i];  cou=cou+1;}
+                            if (regexpf[i].length>1) {regarrows[cou]=regexpf[i];  cou=cou+1; }
                         }
-
-                        this.setstatebase(regarrows);
+						
+                        setstatebase=regarrows;
                     }).then(
                     fetch('http://localhost:3001/table/:dist.:atd')
                         .then(response =>  response.text())
@@ -302,9 +633,9 @@ class Board extends Component {
                             let regarrows=[];
                             let cou=0;
                             for (let i = 0; i < regexpf.length; i++) {
-                                if (regexpf[i].length>1) {regarrows[cou]=regexpf[i];  cou=cou+1;}
+                                if (regexpf[i].length>1) {regarrows[cou]=regexpf[i];  cou=cou+1; }
                             }
-                            this.setstatedistbase(regarrows);
+                           // this.setstatedistbase(regarrows);
                         }).then(
                         fetch('http://localhost:3001/table/:project.:projects')
                             .then(response =>  response.text())
@@ -317,7 +648,7 @@ class Board extends Component {
                                 for (let i = 0; i < regexpf.length; i++) {
                                     if (regexpf[i].length>1) {regarrows[cou]=regexpf[i];  cou=cou+1;}
                                 }
-                                this.setprojinfo(regarrows);
+                             //   this.setprojinfo(regarrows);
                             })
                     ).then(
                         fetch('http://localhost:3001/table/:subproject.:projects')
@@ -331,7 +662,7 @@ class Board extends Component {
                                 for (let i = 0; i < regexpf.length; i++) {
                                     if (regexpf[i].length>1) {regarrows[cou]=regexpf[i];  cou=cou+1;}
                                 }
-                                this.setsubprojinfo(regarrows);
+                               // this.setsubprojinfo(regarrows);
                             })))
 
 
@@ -339,7 +670,9 @@ class Board extends Component {
 
 
     }
-    setstatebase(props) {
+
+	
+	setstatebase(props) {
         this.setState({
             statebase:props,
         });
@@ -439,46 +772,41 @@ class Board extends Component {
     }
 
     atdop(lvl,state) {
-        if (lvl==0)     {       return <Tree content={<FormattedMessage id='atd' />} >
-            {this.atdop(1)}
-        </Tree>} else {
-            if ((lvl == 1)) {
-                let arraybranch = [];
-                for (let i = 0; i < this.state.statebase.length; i++) {
-                    let truedist = (this.state.statebase[i].split(","));
-                    let truestate = truedist[2].split(":");
-                    arraybranch[i] = this.atdop(2, truestate[1]);
-                }
-                return <Tree content={<FormattedMessage id='india' />} onItemClick={() => this.countryview()}>
-                    {arraybranch}
-                </Tree>
-            } else
-            {
-                if ((lvl == 2)) {
-                    let arraybranch = [];
-                    let id = 0;
-                    for (let i = 0; i < this.state.districtbase.length; i++) {
-                        let truedist = (this.state.districtbase[i].split(","));
-                        let truestate = truedist[2].split(":");
-
-                        if (truestate[1] == state) {
-                            truedist = truedist[4].split(":");
-                            arraybranch[id] = this.atdop(3, truedist[1]);
-                            id = id + 1;
-                        }
-                    }
-                    return <Tree content={state.replace(/^"|"$/g, '')} onItemClick={() => this.stateview(state)}>
-                        {arraybranch}
-                    </Tree>
-                } else {
-                    return <Tree content={state.replace(/^"|"$/g, '')} icons={{closeIcon: "Eye"}}/>
-
-
-                }
-            }
-        }
-
+        this.renderAtd(); 
     }
+	
+renderAtd()
+{
+	
+	fetch('http://localhost:3001/table/:type_devision.:atd')
+            .then(response =>  response.text())
+            .then(data => {
+				arrayDevis=JSON.parse(data)
+			}
+			);
+						
+	                fetch('http://localhost:3001/country/')
+                    .then(response =>  response.text())
+                    .then(data => {
+                        let regexp=(data.split(/\[(.+?)\]/));
+                        let regexpf=(regexp[1].split(/\{(.+?)\}/));
+
+                        let regarrows=[];
+                        let cou=0;
+                        for (let i = 0; i < regexpf.length; i++) {
+                            if (regexpf[i].length>1) {//regarrows[cou]=regexpf[i];  cou=cou+1; 
+							   let truedist = (regexpf[i].split(","));
+							   var id_atd=truedist[0].split(":");
+							   var name_atd=truedist[1].split(':');
+					
+                 store.dispatch(act_add(name_atd[1].replace(/^"|"$/g, ''), [],id_atd[1],1));
+							}
+						}
+					});
+}
+
+ 
+
 
     renderbranch (props) {
         if (this.state.arrayf[props]!='[]') {
@@ -563,6 +891,7 @@ class Board extends Component {
                     for (var j = 0; j < regarcol[0].length; j++) {
 
                         myCar[arrayheader[j]]=regarcol[i][j];
+						
 
                     }
                     jsonArrt.push(myCar);
@@ -1265,17 +1594,41 @@ class Board extends Component {
 
     renderSquare()
     {
-
         return this.state.tablevie;
     }
     delete() {
-        fetch('http://localhost:3001/delete/:'+this.state.curcol[0]+'.:'+this.state.textnum+'.:'+this.state.curt+'.:'+this.state.curs, {
+		//alert(Object.keys(gridData[0])[0])
+		var delcol='id_area'
+     //   fetch('http://localhost:3001/delete/:'+this.state.curcol[0]+'.:'+this.state.textnum+'.:'+this.state.curt+'.:'+this.state.curs, {
+     //       method: 'DELETE',
+     //   })
+     //       .then(
+     //           this.renderorder(this.state.curcol[0])
+     //       );
+	if (targetId!='') {
+	
+	       fetch('http://localhost:3001/delete/:'+delcol+'.:'+targetId+'.:link_up_down.:atd', {
             method: 'DELETE',
         })
             .then(
-                this.renderorder(this.state.curcol[0])
-            );
+			function(response) {
+				if (response.status == 200) {
+					fetch('http://localhost:3001/delete/:'+delcol+'.:'+targetId+'.:info_area_devision.:atd', {
+            method: 'DELETE',
+        })
+		
+			store.dispatch(act_del(targetPath,targetId))
+            	ReduxAtdtable(currentDistrict_id,currentDistrict,targetDevis_id,targetPath)
+				}
+			});
+	}
+	
+		else (alert('No target row'))
+	
+	
     }
+	
+	
 
     insert(textrow,curt,curs)
     {
@@ -1299,16 +1652,54 @@ class Board extends Component {
             const wsname = readedData.SheetNames[0];
             const ws = readedData.Sheets[wsname];
             const dataParse = XLSX.utils.sheet_to_json(ws,{header:1});
-
             for (let i=1; i<dataParse.length;i++) {
-                this.insert(dataParse[i],curt,curs)
+                this.info_area_insert(dataParse[i],targetDevis_id+1,currentDistrict_id)
+				
             }
+			
         };
 
         reader.readAsBinaryString(event.target.files[0]);
-
+		
 
     }
+
+
+ info_area_insert(textrow,id_dtype,id_p)
+{ 
+ var idArray=textrow
+       for (let i=0; i<idArray.length;i++) {
+		   
+                if (idArray[i]==undefined) idArray[i]='null'
+				else idArray[i]="'"+idArray[i]+"'"
+            }
+	    fetch('http://localhost:3001/insert/:'+idArray+'.:info_area_devision.:atd', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        }
+    }).then(
+    function(response) {
+        if (response.status == 200) {
+			if (id_dtype>1) {var type_link=id_dtype-1;
+			fetch('http://localhost:3001/insertcus/:'+idArray[0]+','+id_p+','+type_link+'.:id_area,id_parent_area,id_type_link.:link_up_down.:atd', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        }
+		})
+			
+			
+			}
+			gridData.push((idArray))
+			console.log('111')
+			console.log(gridData)
+			store.dispatch(act_add(idArray[3].slice(1,-1), targetPath,idArray[0].slice(1,-1),targetDevis_id+1));
+           // return (props.render(idArray[3].slice(1,-1),idArray[0]));  
+			}
+			else {console.log(response)}
+			});
+}
 
     localeChange(evt) {
         const val = evt.target.value;
@@ -1320,38 +1711,58 @@ class Board extends Component {
     }
 
     csvreport(){
-        return this.state.tableview;
+					  var exportData=[];
+					  exportData=gridData.slice();
+			  for (var i=0;i<exportData.length;i++)
+			  {
+				  //exportData[i].country=108;
+				  //exportData[i].devis=targetDevis_id+1;
+				  //exportData[i].shape=1;
+			  }
+        return exportData;
     }
 
     xslsreport(){
         var xsls="";
-        if (this.state.tableview.length>0) {
+      //  if (this.state.tableview.length>0) {
 
-            var jsonArr = [];
-            var jsonArrt = [];
+          //  var jsonArrt = [];
 
-            for (var i = 0; i < this.state.curcol.length; i++) {
-                jsonArr.push(this.state.curcol[i].replace(/"/g,''));
-            }
-            for (let i = 0; i < this.state.tableview.length; i++) {
-                var myCar = new Object();
-                for (var j = 0; j < this.state.tableview[0].length; j++) {
+           // for (var i = 0; i < this.state.curcol.length; i++) {
+            //    jsonArr.push(this.state.curcol[i].replace(/"/g,''));
+           // }
+            //for (let i = 0; i < this.state.tableview.length; i++) {
+             //   var myCar = new Object();
+              //  for (var j = 0; j < this.state.tableview[0].length; j++) {
 
-                    myCar[this.state.curcol[j].replace(/"/g,'')]=this.state.tableview[i][j].replace(/"/g,'');
+              //      myCar[this.state.curcol[j].replace(/"/g,'')]=this.state.tableview[i][j].replace(/"/g,'');
 
-                }
-                jsonArrt.push(myCar);
+              //  }
+              //  jsonArrt.push(myCar);
 
-            }
-            let header = ["Name", "City"];
+           // }
+		   var jsonArr = Object.keys(gridData[0]);
+		
+
             const ws = XLSX.utils.book_new();
-            XLSX.utils.sheet_add_aoa(ws, [jsonArr]);
-            XLSX.utils.sheet_add_json(ws, jsonArrt, { origin: 'A2', skipHeader: true });
+          //  XLSX.utils.sheet_add_aoa(ws, [jsonArr]);
+          //  XLSX.utils.sheet_add_json(ws, jsonArrt, { origin: 'A2', skipHeader: true });
+		      XLSX.utils.sheet_add_aoa(ws, [jsonArr]);
+			  var exportData=gridData.slice();
+			  for (var i=0;i<exportData.length;i++)
+			  {
+				  exportData[i].country=108;
+				  exportData[i].devis=targetDevis_id+1;
+				  exportData[i].shape=1;
+				 //  exportData[i][idCountrycol]=108
+				  //  exportData[i][idDeviscol]=targetDevis_id
+			  }
+            XLSX.utils.sheet_add_json(ws, exportData, { origin: 'A2', skipHeader: true });
             const wb = { Sheets: { 'data': ws }, SheetNames: ['data'] };
             const excelBuffer = XLSX.write(wb, { bookType: "xlsx", type: 'array', cellStyles:true });
             xsls = new Blob([excelBuffer], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;charset=UTF-8"});
             FileSaver.saveAs(xsls, this.state.curt+".xlsx");
-        }
+       // }
     }
 
 
@@ -1501,24 +1912,89 @@ class Board extends Component {
         alert(proj) ;
     }
 
+updateTree(name,id)
+{
+	ReduxAtdtable(currentDistrict_id,currentDistrict,targetDevis_id,targetPath)
+	store.dispatch(act_add(name, targetPath,id.slice(1,-1),targetDevis_id+1));
+}
+updateTreerename(name,id)
+{
+	alert(name+id)
+	ReduxAtdtable(currentDistrict_id,currentDistrict,targetDevis_id,targetPath)
+	store.dispatch(act_update(targetPath,id,name));
+}
+	setDataGrid()
+	{
+		 exampleData={id_area: null,
+		 country: "India",
+		 devis: targetDevis,
+		 name_full: null,
+name_shot: null,
+code_devision: null,
+date_start:null,
+date_end:null,
 
 
+
+		 shape: 1}
+this.setState((state) => {
+                    return {
+						curt:currentDistrict,
+						footer:              <div className='lower'>
+						 <Example
+                                render={(name,id)=>this.updateTree(name,id)}
+                                curcol={exampleData}
+                                curs={this.state.curs}
+                                curt={currentDistrict}
+                                textnum={targetId}
+								id_dtype={targetDevis_id+1}
+								id_p={currentDistrict_id}
+                                truestatus="input"
+                                text=<FormattedMessage id='input' />
+                            status=<FormattedMessage id='inputtxt' />
+                            />
+                            <Example
+                                render={(name,id)=>this.updateTreerename(name,id)}
+                                curcol={exampleData}
+                                curs={this.state.curs}
+                                curt={currentDistrict}
+                                textnum={targetId}
+								id_p={currentDistrict_id}
+                                truestatus='update'
+								id_dtype={targetDevis_id+1}
+                                text=<FormattedMessage id='update' />
+                            status=<FormattedMessage id='updatetxt' />
+                            />
+                            <button style={{display: 'inline-block',width: '10%',height: '50px'}} onClick={() => this.delete()}>
+                                <FormattedMessage id='deletestr' />
+                            </button>
+                            <button style={{display: 'inline-block',width: '10%'}} >
+                                <CSVLink style={{color:'#C5C5C5'}}  data={this.csvreport()}    filename={currentDistrict+".csv"}><FormattedMessage id='uploadcsv' /></CSVLink>
+                            </button>
+                            <button style={{display: 'inline-block',width: '10%'}} onClick={()=>this.xslsreport()}><FormattedMessage id='uploadxsls' />
+                            </button>
+                            <button style={{display: 'inline-block',width: '10%'}} onClick={()=>document.getElementById('fileload').click()}><FormattedMessage id='load' />
+                            </button>
+							</div>
+}})
+	}
 
     render() {
-
         return (
             <div style={{verticalAlign: 'top'}}>
-
+				
                 <IntlProvider
                     messages={messages[this.state.locale]}
                     locale={this.state.locale}>
-
                     <div className='middle' style={{display:'inline-block'}}>
-                        <div className="treemiddle" id="treemiddle "style={{display:'inline-block'}}><Tabs projects={<FormattedMessage id='projects'/>} nsi=<FormattedMessage id='nsi' /> project={()=>this.renderproject()} tree={()=>this.rendertree()}  /></div>
+					
+                        <div className="treemiddle" id="treemiddle "style={{display:'inline-block'}}><Tabs projects={<FormattedMessage id='projects'/>} nsi=<FormattedMessage id='nsi' />  atdtree={ <App store={store} />}  /></div>
                         <div className="tablemiddle" style={{display:'inline-block'}}>
-
-                            <h1>{this.state.curs}.{this.state.curt}</h1>
-                            <div className='tablecels'>{this.renderSquare()}</div>
+						<span id='setDataGrid' onClick={()=>this.setDataGrid()}></span>
+						<h1>{this.state.curs}{this.state.curt}</h1>
+							  <FunctionalDataGrid onClick={()=>alert(';l;l')} columns={columns} data={gridData} enableColumnsShowAndHide={true}/>
+                            
+                            <div className='tablecels' >{this.renderSquare()}</div>
                             {this.state.footer}
                         </div>
                         <input type="file" accept=".xls,.xlsx" id="fileload" style={{display:'none'}}  onInput={(e)=>this.handleChange(e,this.state.curt,this.state.curs)} />
@@ -1529,18 +2005,46 @@ class Board extends Component {
     }
 }
 
+let myBoard=new Board()
+myBoard.renderAtd();
 
+const  MyGrid =() => {
+    const [email, setEmail] = useContext(UserContext)
+    const [password, setPassword] = useState('')
+    const [emailDirty,setEmailDirty]=useState(false)
+    const [passwordDirty,setPasswordDirty]=useState(false)
+    const [emailError,setEmailError]=useState('Empty field')
+    const [passwordError,setPasswordError]=useState('Empty field')
+    const [formValid,setFormValid]=useState(false)
 
+    useEffect (() => {
+        if (emailError || passwordError)
+        {
+            setFormValid(false)
+        } else setFormValid(true)
+    },[emailError,passwordError])
+	    const emailHandler=(e)=> {
+        setEmail(e.target.value)
+    }
+	
+	return (
+        <div className='login'  >
+                <FunctionalDataGrid columns={columns} />
+          {email}
+        </div>
+    );
+}
 
 class Game extends React.Component {
 
     render() {
 
         return (
+	<UserContext.Provider id={"Provider"} value={'dfdfdgttrryh'}>	
             <div className="game">
-                <Board />
+			<Board/>
             </div>
-
+</UserContext.Provider>	
         );
     }
 }
