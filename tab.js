@@ -9,11 +9,9 @@ const Tabs =props => {
     return (
         <TabsComponent>
             <TabList>
-                <Tab key="1">{props.nsi}</Tab>
-                <Tab key="2">{props.projects}</Tab>
+				<Tab key="3">{"ATD"}</Tab>
             </TabList>
-            <TabPanel key="1">{props.tree()}</TabPanel>
-            <TabPanel key="2">{props.project()}</TabPanel>
+			<TabPanel key="3">{props.atdtree}</TabPanel>
         </TabsComponent>);
 }
 
