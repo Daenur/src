@@ -255,7 +255,7 @@ box-sizing: border-box;
  {
      overflow: auto;
      width:20%;
- padding-right: 50px;
+ padding-right: 3px;
      padding-left: 10px;
      height:94%;
      border: 1px solid #505A66;
@@ -278,6 +278,7 @@ box-sizing: border-box;
 
  .tablemiddle
  {
+	    color: #C5C5C5;
      width:82%;
      height:80%;
      position:absolute;
@@ -359,4 +360,39 @@ box-sizing: border-box;
     width: 20%;
     display: inline-block;
 
+}
+
+.ReactVirtualized__List
+{
+	 background-color: #2B3138 !important;
+	 color: #C5C5C5 !important;
+	 background: #2B3138 !important;
+}
+
+.css-1mhygto
+{
+	color: #C5C5C5;
+    background: #2B3138;
+}
+.css-g53ldg
+{
+	color: #C5C5C5 !important;
+    background-color: #2B3138  !important;
+}
+
+ .treeatd
+ {
+     
+    color: #C5C5C5;
+    background: #383F48;
+
+ }
+ .react-tabs
+ {
+	 width:100%;
+ }
+ 
+ .css-1mhygto:hover {
+	  color: #4DB6BC;
+    background-color: #383F48;
 }
