@@ -86,7 +86,9 @@
     left: 1330px;
     top: 7px;
 }
-.form input{padding: 5px;color: #C5C5C5;}
+.form input{
+padding: 5px;color: #C5C5C5;
+}
 
 .logoSwitcher{
     position: absolute;
