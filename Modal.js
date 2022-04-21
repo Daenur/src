@@ -149,32 +149,57 @@ function newcombobox(props,curs,status,keyar)
 }
 }
 
-function atdRows(curOb,status,textnum)
+function atdRows(curOb,status,textnum,row)
 {
-var	curcol=Object.keys(curOb)
+	var	curcol=Object.keys(curOb)
+	if ((status=="update")) {
+if (row!=null)	{console.log(row)
+
 	                var div = document.getElementById('modal_content'+status);	
 				if (div!=null) {
                div.innerHTML="";
                 let fori=0;
 	                for (let i=fori; i< curcol.length;i++)
                 {
-                 
-                     if ((i==0) && (status=="update"))   div.innerHTML += "<td>" + curcol[i] + "<input value=\"" + textnum + "\" disabled name=\"Names\" id=\"" + curcol[i] + status + "\"></td>"
+                     if (i==0)   {div.innerHTML += "<td>" + curcol[i] + "<input value=\"" + row[curcol[i]] + "\" disabled name=\"Names\" id=\"" + curcol[i] + status + "\"></td>"}
+					
 					 
                         else 
 							{
+								if (row[curcol[i]]==null) row[curcol[i]]=''
+								if (curcol[i]=='country') {div.innerHTML += "<td>" + curcol[i] + "<input value=\"" + curOb.country+ "\" disabled name=\"Names\" id=\"" + curcol[i] + status + "\"></td>" }
+								else {
+								if (curcol[i]=='devis') {div.innerHTML += "<td>" + curcol[i] + "<input value=\"" + curOb.devis + "\" disabled name=\"Names\" id=\"" + curcol[i] + status + "\"></td>"} else 
+								
+												
+								div.innerHTML += "<td>" + curcol[i] + "<input value=\""+row[curcol[i]]+"\"+ name=\"Names\" id=\"" + curcol[i] + status + "\"></td>"}
+				}
+                    
+				}
+	}} 
+	}
+	else {
+		
+			                var div = document.getElementById('modal_content'+status);	
+				if (div!=null) {
+               div.innerHTML="";
+                let fori=0;
+	                for (let i=fori; i< curcol.length;i++)
+                {
+                
+                    
 								if (curcol[i]=='country') {div.innerHTML += "<td>" + curcol[i] + "<input value=\"" + curOb.country+ "\" disabled name=\"Names\" id=\"" + curcol[i] + status + "\"></td>" }
 								else {
 								if (curcol[i]=='devis') {div.innerHTML += "<td>" + curcol[i] + "<input value=\"" + curOb.devis + "\" disabled name=\"Names\" id=\"" + curcol[i] + status + "\"></td>"} else 
 								
 										
-								div.innerHTML += "<td>" + curcol[i] + "<input  name=\"Names\" id=\"" + curcol[i] + status + "\"></td>"}
-				}
+								div.innerHTML += "<td>" + curcol[i] + "<input name=\"Names\" id=\"" + curcol[i] + status + "\"></td>"}
+				
                     
 				}
 	}
 }
-
+}
 const Modal = props => {
 
     return (
@@ -186,7 +211,7 @@ const Modal = props => {
                 <hr/>
                 <h2>{props.curs+props.curt}</h2>
                 <hr/>
-<table id={'modal_content'+props.truestatus}>{atdRows(props.curcol,props.truestatus,props.textnum)}</table>
+<table id={'modal_content'+props.truestatus}>{atdRows(props.curcol,props.truestatus,props.textnum,props.row)}</table>
                 <hr/>
                 <button style={{width: '20%',height: '50px'}} onClick={()=>handleListSubmit (props)}>{props.text}</button>
                 {props.children}
@@ -247,6 +272,8 @@ function info_area_insert(textrow,props)
 
 function update(textrow,props)
 {
+		var	curcol=Object.keys(props.curcol)
+	var targetUpdate=props.row[curcol[0]] ;
 	var idArray=textrow.split(',')
 	var curcol=Object.keys(props.curcol)
 	for (var i=0;i<curcol.length;i++) 
@@ -255,10 +282,10 @@ function update(textrow,props)
 	if (curcol[i]=='devis') curcol[i]='id_type_devis'
 	if (curcol[i]=='shape') curcol[i]='id_status_shape'
 	}
-	   fetch('http://localhost:3001/update/:'+curcol[0]+'.:'+props.textnum+'.:'+curcol.slice(1)+'.:'+textrow+'.:info_area_devision.:atd')
+	   fetch('http://localhost:3001/update/:'+curcol[0]+'.:'+targetUpdate+'.:'+curcol.slice(1)+'.:'+textrow+'.:info_area_devision.:atd')
 .then(
     function(response) {
         if (response.status == 200) {
-            return (props.render(idArray[2].slice(1,-1),props.textnum));  }});
+            return (props.render(idArray[2].slice(1,-1),targetUpdate));  }});
 }
 export default Modal
