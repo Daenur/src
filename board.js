@@ -11,7 +11,6 @@ import { IntlProvider } from 'react-intl'
 import { FormattedMessage} from 'react-intl'
 import styled from 'styled-components'
 import '../node_modules/bootstrap/dist/css/bootstrap.min.css'
-import './newTable.css'
 import Tabs from "./tab"
 import { useTable, useBlockLayout, useResizeColumns } from 'react-table'
 import { createStore} from "redux";
@@ -21,11 +20,25 @@ import { Map } from 'immutable';
 import FunctionalDataGrid, { Column, Group, Sort, filterRenderers, utils, ColumnGroup} from 'functional-data-grid'
 
 document.addEventListener("click",function(e)
-{
-	
-		if (e.target.getAttribute('idgrid')!=null) {targetId=(e.target.getAttribute('idgrid')); alert('targetId='+targetId)}
+{		
+	var selectorClick=e.target;
+	console.log( e.target.getAttribute('class'));
+if (e.target.getAttribute('class')==null) (selectorClick=e.target.parentElement)
+	if (selectorClick.getAttribute('class')=='functional-data-grid__cell-content css-17z9byi')
+	{	
+console.log(targetRowobject)
+targetHover=selectorClick.parentElement.parentElement.parentElement.getAttribute('data-index');
+if (targetRowobject!=0) targetRowobject.parentElement.parentElement.style.color = '#C5C5C5'; 
+		selectorClick.parentElement.parentElement.style.color = 'red'; 
+		
+targetRowobject=e.target;		
+	}
+		
 });
-var targetId='';
+
+
+var targetHover;
+var targetRowobject=0;
 var targetDevis_id;
 var targetPath=''
 var exampleData;
@@ -237,11 +250,13 @@ function reducerUpdate(list,id_d,name)
 
 function ReduxAtdtable(id,childText,devis,path)
 {	
+targetHover=null;
+		if (targetRowobject!=0) {targetRowobject.parentElement.parentElement.style.color = '#C5C5C5'; targetRowobject=0;}
 currentDistrict_id=id
 if (arrayDevis.length>devis) {targetDevis=(arrayDevis[devis].name_devis)
 	targetDevis_id=devis;
 targetPath=path
-targetId=''
+
 currentDistrict=childText;
 if (id!=0) {fetch("http://localhost:3001/dist/:"+id.replace(/^"|"$/g, ''))
                             .then(response =>  response.text())
@@ -340,7 +355,7 @@ this.props.store.dispatch(act_toggle(path));
 }
 render() {
 
-return <div>
+return <div className='treeatd'>
 <Node item={this.state.item} toggle={this.toggle.bind(this)} />
 </div>
 }
@@ -500,7 +515,7 @@ function Example(props) {
             modal1:false
         }
     );
-
+	
     return (
         <div style={{display:'inline-block',width: '10%'}}>
             <button style={{width: '100%',height: '50px'}}  onClick={() => setModal(
@@ -513,12 +528,12 @@ function Example(props) {
             </button>
             <Modal
 			id_p={props.id_p}
+				row={gridData[targetHover]}
 			id_dtype={props.id_dtype}
                 subcrop={props.subcrop}
                 subseason={props.subseason}
                 subarea={props.subarea}
                 render={props.render}
-                textnum={targetId}
                 truestatus={props.truestatus}
                 status={props.status}
                 curs={props.curs}
@@ -1605,19 +1620,23 @@ renderAtd()
      //       .then(
      //           this.renderorder(this.state.curcol[0])
      //       );
-	if (targetId!='') {
 	
-	       fetch('http://localhost:3001/delete/:'+delcol+'.:'+targetId+'.:link_up_down.:atd', {
+	
+	if (targetHover!=null) {
+	 var targetDelete=(gridData[targetHover]);
+	 targetDelete=targetDelete[columns[0].title];
+	       fetch('http://localhost:3001/delete/:'+delcol+'.:'+targetDelete+'.:link_up_down.:atd', {
             method: 'DELETE',
         })
             .then(
 			function(response) {
 				if (response.status == 200) {
-					fetch('http://localhost:3001/delete/:'+delcol+'.:'+targetId+'.:info_area_devision.:atd', {
+					fetch('http://localhost:3001/delete/:'+delcol+'.:'+targetDelete+'.:info_area_devision.:atd', {
             method: 'DELETE',
         })
-		
-			store.dispatch(act_del(targetPath,targetId))
+		targetHover=null;
+		 targetRowobject=0;
+			store.dispatch(act_del(targetPath,targetDelete))
             	ReduxAtdtable(currentDistrict_id,currentDistrict,targetDevis_id,targetPath)
 				}
 			});
@@ -1946,7 +1965,7 @@ this.setState((state) => {
                                 curcol={exampleData}
                                 curs={this.state.curs}
                                 curt={currentDistrict}
-                                textnum={targetId}
+                                
 								id_dtype={targetDevis_id+1}
 								id_p={currentDistrict_id}
                                 truestatus="input"
@@ -1958,7 +1977,7 @@ this.setState((state) => {
                                 curcol={exampleData}
                                 curs={this.state.curs}
                                 curt={currentDistrict}
-                                textnum={targetId}
+                                
 								id_p={currentDistrict_id}
                                 truestatus='update'
 								id_dtype={targetDevis_id+1}
