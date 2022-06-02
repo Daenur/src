@@ -252,7 +252,7 @@ box-sizing: border-box;
     width:80%;
 }
  .treemiddle
- {
+ { resize:horizontal;
      overflow: auto;
      width:20%;
  padding-right: 3px;
@@ -380,7 +380,7 @@ box-sizing: border-box;
     background-color: #2B3138  !important;
 }
 
- .treeatd
+ .treeatd,.treepro,.treecrop
  {
      
     color: #C5C5C5;
