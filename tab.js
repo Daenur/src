@@ -9,10 +9,20 @@ const Tabs =props => {
     return (
         <TabsComponent>
             <TabList>
-				<Tab key="3">{"ATD"}</Tab>
+			<Tab key="1">{"ATD"}</Tab>
+			 
+            <Tab key="2">{"Project"}</Tab>
+			    <Tab key="3">{"MD"}</Tab>
+				
             </TabList>
-			<TabPanel key="3">{props.atdtree}</TabPanel>
+			<TabPanel key="1">{props.atdtree}</TabPanel>
+			     
+            <TabPanel key="2">{props.project}</TabPanel>
+			<TabPanel key="3">{props.tree}</TabPanel>
+			
         </TabsComponent>);
 }
+
+
 
 export default Tabs;
