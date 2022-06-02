@@ -1,7 +1,6 @@
-
-
-function FKcombo(curs,curt,curcol,status,textnum,subcrop,subarea,subseason) {
-    fetch('http://localhost:3001/FK/:'+curs+'.:'+curt)
+let localhostm='45.89.26.151';
+function FKcombo(curs,curt,curcol,status,textnum) {
+    fetch('http://'+localhostm+':3001/FK/:'+curs+'.:'+curt)
         .then(response =>  response.text())
         .then(data => {
             {
@@ -45,18 +44,6 @@ function FKcombo(curs,curt,curcol,status,textnum,subcrop,subarea,subseason) {
                         }
 
                     }
-                    if (curcol[i]=='id_area') {
-                        selectbool = 1;
-                        newcombobox('NO',"id_area",status,subarea);
-                    }
-                    if (curcol[i]=='crop') {
-                        selectbool = 1;
-                        newcombobox('NO',"crop",status,subcrop);
-                    }
-                    if (curcol[i]=='season') {
-                        selectbool = 1;
-                        newcombobox('NO',"season",status,subseason);
-                    }
                     if (selectbool==0) {
                      if ((i==0) && (status=="update"))   div.innerHTML += "<td>" + curcol[i] + "<input value=\"" + textnum() + "\" disabled name=\"Names\" id=\"" + curcol[i] + status + "\"></td>"
                         else div.innerHTML += "<td>" + curcol[i] + "<input  name=\"Names\" id=\"" + curcol[i] + status + "\"></td>"
@@ -68,6 +55,7 @@ function FKcombo(curs,curt,curcol,status,textnum,subcrop,subarea,subseason) {
 function combotext(istart,curcol,status,id_dtype)
 {
     let combot="";
+	alert(curcol);
     for (let i=istart; i< curcol.length;i++) {
 		if (curcol[i]=='country') {combot+="'108',";} else 
 		{
@@ -88,6 +76,7 @@ function combotext(istart,curcol,status,id_dtype)
 }
 function handleListSubmit (props) {
 var curcol=Object.keys(props.curcol)
+	if (props.curt.includes('##')) curcol=Object.values(props.curcol);
     let fields;
     if (props.truestatus=="update") { fields = combotext(1,curcol,props.truestatus,props.id_dtype);
         update(fields,props);}
@@ -100,7 +89,7 @@ var curcol=Object.keys(props.curcol)
 function newcombobox(props,curs,status,keyar)
 
 { if (props!="NO") {
-    fetch('http://localhost:3001/FKselect/:' + curs + '.:' + props[1] + '.:' + props[2])
+    fetch('http://'+localhostm+':3001/FKselect/:' + curs + '.:' + props[1] + '.:' + props[2])
         .then(response => response.text())
         .then(data => {
             let regexpFK = (data.split(/\[(.+?)\]/));
@@ -130,6 +119,7 @@ function newcombobox(props,curs,status,keyar)
             div.innerHTML += "<td>" + props[1].substring(1, props[1].length - 1) + "<select name=\"Names\" id=\"" + props[0].split('"').at(1) + status + "\"></td>"
             var select = document.getElementById(props[0].split('"').at(1) + status);
             select.innerHTML = "";
+			console.log(props[0].split('"').at(1) + status);
             for (var i = 0; i < regarcolFK.length; i++) {
                 var opt = regarcolFK[i];
                 select.innerHTML += "<option value=\"" + opt + "\">" + opt + "</option>";
@@ -149,9 +139,49 @@ function newcombobox(props,curs,status,keyar)
 }
 }
 
-function atdRows(curOb,status,textnum,row)
+function atdRows(curOb,status,textnum,row,curt)
 {
-	var	curcol=Object.keys(curOb)
+	var	curcol=Object.keys(curOb);
+	if (curt.includes('##')) {curcol=Object.values(curOb); 
+	
+	if ((status=="update")) {
+if (row!=null) {console.log(row)
+
+var div = document.getElementById('modal_content'+status);
+if (div!=null) {
+div.innerHTML="";
+for (let i=0; i< curcol.length;i++)
+{
+
+if (i==0) {div.innerHTML += "<td>" + curcol[i] + "<input value=\"" + row[curcol[i]] + "\" disabled name=\"Names\" id=\"" + curcol[i] + status + "\"></td>"}
+
+
+else
+{
+if (row[curcol[i]]==null) row[curcol[i]]=''
+if (curcol[i]=='country') {div.innerHTML += "<td>" + curcol[i] + "<input value=\"" + curOb.country+ "\" disabled name=\"Names\" id=\"" + curcol[i] + status + "\"></td>" }
+else {
+if (curcol[i]=='devis') {div.innerHTML += "<td>" + curcol[i] + "<input value=\"" + curOb.devis + "\" disabled name=\"Names\" id=\"" + curcol[i] + status + "\"></td>"} else
+
+
+div.innerHTML += "<td>" + curcol[i] + "<input value=\""+row[curcol[i]]+"\"+ name=\"Names\" id=\"" + curcol[i] + status + "\"></td>"}
+}
+
+}
+}}
+}
+else {
+
+var div = document.getElementById('modal_content'+status);
+if (div!=null) {
+div.innerHTML="";
+FKcombo(curt.split('##')[1],curt.split('##')[0],curcol,status);
+
+}
+}
+	
+	}else 
+	{
 	if ((status=="update")) {
 if (row!=null)	{console.log(row)
 
@@ -161,6 +191,7 @@ if (row!=null)	{console.log(row)
                 let fori=0;
 	                for (let i=fori; i< curcol.length;i++)
                 {
+					
                      if (i==0)   {div.innerHTML += "<td>" + curcol[i] + "<input value=\"" + row[curcol[i]] + "\" disabled name=\"Names\" id=\"" + curcol[i] + status + "\"></td>"}
 					
 					 
@@ -199,7 +230,7 @@ if (row!=null)	{console.log(row)
 				}
 	}
 }
-}
+}}
 const Modal = props => {
 
     return (
@@ -211,7 +242,7 @@ const Modal = props => {
                 <hr/>
                 <h2>{props.curs+props.curt}</h2>
                 <hr/>
-<table id={'modal_content'+props.truestatus}>{atdRows(props.curcol,props.truestatus,props.textnum,props.row)}</table>
+<table id={'modal_content'+props.truestatus}>{atdRows(props.curcol,props.truestatus,props.textnum,props.row,props.curt)}</table>
                 <hr/>
                 <button style={{width: '20%',height: '50px'}} onClick={()=>handleListSubmit (props)}>{props.text}</button>
                 {props.children}
@@ -231,7 +262,7 @@ let curt=props.curt;
         curt="project";
         curs="projects";
     }
-  //  fetch('http://localhost:3001/insert/:'+textrow+'.:'+curt+'.:'+curs, {
+  //  fetch('http://'+localhostm+':3001/insert/:'+textrow+'.:'+curt+'.:'+curs, {
   //      method: 'POST',
   //      headers: {
   //          'Content-Type': 'application/json',
@@ -240,14 +271,26 @@ let curt=props.curt;
   //  function(response) {
    //     if (response.status == 200){
     //        return (props.render());  }});
+	
 	info_area_insert(textrow,props)
 	
 }
 
 function info_area_insert(textrow,props)
 { 
+if (props.curt.includes('##')) { 
+	    fetch('http://'+localhostm+':3001/insert/:'+textrow+'.:'+props.curt.split('##')[0]+'.:'+props.curt.split('##')[1], {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        }
+    }).then(
+    function(response) {
+		return (props.render());  
+			});
+	} else {
  var idArray=textrow.split(',')
-	    fetch('http://localhost:3001/insert/:'+textrow+'.:info_area_devision.:atd', {
+	    fetch('http://'+localhostm+':3001/insert/:'+textrow+'.:info_area_devision.:atd', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
@@ -256,7 +299,7 @@ function info_area_insert(textrow,props)
     function(response) {
         if (response.status == 200) {
 			if (props.id_dtype>1) {var type_link=props.id_dtype-1;
-			fetch('http://localhost:3001/insertcus/:'+idArray[0]+','+props.id_p+','+type_link+'.:id_area,id_parent_area,id_type_link.:link_up_down.:atd', {
+			fetch('http://'+localhostm+':3001/insertcus/:'+idArray[0]+','+props.id_p+','+type_link+'.:id_area,id_parent_area,id_type_link.:link_up_down.:atd', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
@@ -268,24 +311,33 @@ function info_area_insert(textrow,props)
             return (props.render(idArray[3].slice(1,-1),idArray[0]));  }
 			else {console.log(response)}
 			});
-}
+}}
 
 function update(textrow,props)
 {
+	if (props.curt.includes('##')) {
+			var	curcol=Object.values(props.curcol);
+			var targetUpdate=props.row[curcol[0]] ;
+	var idArray=textrow.split(',')
+		fetch('http://'+localhostm+':3001/update/:'+curcol[0]+'.:'+targetUpdate+'.:'+curcol.slice(1)+'.:'+textrow+'.:'+props.curt.split('##')[0]+'.:'+props.curt.split('##')[1])
+.then(
+    function(response) {
+        if (response.status == 200) {
+            return (props.render(idArray[2].slice(1,-1),targetUpdate));  }});} 
+			else {
 		var	curcol=Object.keys(props.curcol)
 	var targetUpdate=props.row[curcol[0]] ;
 	var idArray=textrow.split(',')
-	var curcol=Object.keys(props.curcol)
 	for (var i=0;i<curcol.length;i++) 
 	{
 	if (curcol[i]=='country') curcol[i]='id_country'
 	if (curcol[i]=='devis') curcol[i]='id_type_devis'
 	if (curcol[i]=='shape') curcol[i]='id_status_shape'
 	}
-	   fetch('http://localhost:3001/update/:'+curcol[0]+'.:'+targetUpdate+'.:'+curcol.slice(1)+'.:'+textrow+'.:info_area_devision.:atd')
+	   fetch('http://'+localhostm+':3001/update/:'+curcol[0]+'.:'+targetUpdate+'.:'+curcol.slice(1)+'.:'+textrow+'.:info_area_devision.:atd')
 .then(
     function(response) {
         if (response.status == 200) {
             return (props.render(idArray[2].slice(1,-1),targetUpdate));  }});
-}
+}}
 export default Modal
