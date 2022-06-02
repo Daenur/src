@@ -28,6 +28,7 @@ export const messages = {
         updatesubp:'Update subproject',
         inputsubp:'Insert subproject',
         deletesubp:'Delete subproject',
+generate:'Generate',
     },
     [LOCALES.RUSSIAN]: {
         update: 'Обновить строку',
