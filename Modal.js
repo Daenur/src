@@ -55,15 +55,14 @@ function FKcombo(curs,curt,curcol,status,textnum) {
 function combotext(istart,curcol,status,id_dtype)
 {
     let combot="";
-	alert(curcol);
     for (let i=istart; i< curcol.length;i++) {
 		if (curcol[i]=='country') {combot+="'108',";} else 
 		{
 			if (curcol[i]=='devis') {combot+="'"+id_dtype+"',";} else {
         var div = document.getElementById(curcol[i]+status);
         if (div.localName=="select") combot+=div.value;
-		else { if (div.value=='') {combot+="null,";} else 
-			combot+="'"+div.value+"',";}}}
+		else { if (div.value=='') {combot+="null,";} else { if (curcol[i]=='shape') { combot+="1,";} else
+		combot+="'"+div.value+"',";}}}}
 		
     
 		}
