@@ -33,7 +33,7 @@ const Navbar=()=>
                   </option>
               ))}
           </select>
-              <div className="navbar_login"><NavLink to='/'><img src={face} className='face'/></NavLink></div>
+              <div className="navbar_login"style={{left: '92%'}}><NavLink to='/'><img src={face} className='face'/></NavLink></div>
           </IntlProvider>
           </div>
   );
