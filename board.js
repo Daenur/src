@@ -161,6 +161,90 @@ const UserContext=createContext();
 let setstatebase=''
 let probehooks='';
 let croptablecolumns = new Object([]);
+let croptableconstcolumns = [
+ new Column({
+    id : 'id_area',
+    title: 'id_area',
+    width: 120,
+		      renderer : (v, e) => <a href={ e.url }  target={"blank"}>{ v }</a>,
+      filterable : true,
+	  sortable : true,
+    valueGetter: e => e.id_area,
+  }),
+  new Column({
+    id : 'country',
+    title: 'country',
+    width: 120,
+		      renderer : (v, e) => <a href={ e.url } target={"blank"}>{ v }</a>,
+      filterable : true,
+	  sortable : true,
+    valueGetter: e => e.country,
+  }),
+      new Column({
+    id : 'devis',
+    title: 'devis',
+    width: 120,
+		      renderer : (v, e) => <a href={ e.url } target={"blank"}>{ v }</a>,
+      filterable : true,
+	  sortable : true,
+    valueGetter: e => e.devis,
+  }),
+    new Column({
+    id : 'name_full',
+    title: 'name_full',
+    width: 120,
+    valueGetter: e => e.name_full,
+	      renderer : (v, e) => <a href={ e.url } target={"blank"}>{ v }</a>,
+      filterable : true,
+      sortable : true,
+      resizable : true,
+  }),
+    new Column({
+    id : 'name_shot',
+    title: 'name_shot',
+    width: 120,
+	renderer : (v, e) => <a href={ e.url }  target={"blank"}>{ v }</a>,
+      filterable : true,
+	  sortable : true,
+    valueGetter: e => e.name_shot,
+  }),
+  
+    new Column({
+    id : 'code_devision',
+    title: 'code_devision',
+    width: 120,
+		      renderer : (v, e) => <a href={ e.url } target={"blank"}>{ v }</a>,
+      filterable : true,
+	  sortable : true,
+    valueGetter: e => e.code_devision,
+  }),
+      new Column({
+    id : 'date_start1',
+    title: 'date_start1',
+    width: 120,
+		      renderer : (v, e) => <a href={ e.url } target={"blank"}>{ v }</a>,
+      filterable : true,
+	  sortable : true,
+    valueGetter: e => e.date_start,
+  }),
+      new Column({
+    id : 'date_end',
+    title: 'date_end',
+    width: 120,
+		      renderer : (v, e) => <a href={ e.url } target={"blank"}>{ v }</a>,
+      filterable : true,
+	  sortable : true,
+    valueGetter: e => e.date_start,
+  }),
+      new Column({
+    id : 'shape',
+    title: 'shape',
+    width: 120,
+		      renderer : (v, e) => <a href={ e.url } target={"blank"}>{ v }</a>,
+      filterable : true,
+	  sortable : true,
+    valueGetter: e => e.shape,
+  })]
 let cropcolumns = [
 
   new Column({
@@ -1371,18 +1455,22 @@ class Board extends Component {
                             .then(response =>  response.text())
                            .then(data => {
                                  let regexp2= JSON.parse(data)
-                                
+                                if (regexp[i]['nspname']=='crop') cou=0;
+								if (regexp[i]['nspname']=='mobile_app') cou=1;
+								if (regexp[i]['nspname']=='other') cou=2;
+								if (regexp[i]['nspname']=='soil') cou=3;
                                for (let j = 0; j < regexp2.length; j++) {
-                                 { cropstore.dispatch(act_add((regexp2[j])['table_name']+'##'+regexp[i]['nspname'], [cou],i,1));}
+                                 { 
+								 cropstore.dispatch(act_add((regexp2[j])['table_name']+'##'+regexp[i]['nspname'], [cou],i,1));}
                                 }
-								cou=cou+1;
-                            })
+								//cou=cou+1;
+                            });
 							
 							 }
 							 }
                                 }
                             
-                            })
+                            });
 	        
 
     }
@@ -1749,23 +1837,39 @@ renderAtd()
 
     }
 	
-getcolums=()=>croptablecolumns.slice()
-
+//getcolumns=()=>croptablecolumns
+rendercroptable()
+{
+	 alert(croptablecolumns)
+	return 		<FunctionalDataGrid  onClick={()=>alert(';l;l')} columns={this.getcolumns()} data={gridData} enableColumnsShowAndHide={true}/>
+                                    
+}
     cropview(idproj)
 	{ 
 		if (idproj.includes('##')) {
-		 
+		if (this.tablevie!=null) document.getElementById('funcgrid').innerHTML=null;
 		let propsa=idproj.split('##')[1];
 		let props=idproj.split('##')[0];
 		currentDistrict=props;
-		 //croptablecolumns[props] = [];
+		 
+		 
         fetch('http://'+localhost+':3001/table/:'+props+'.:'+propsa)
             .then(response =>  response.text())
             .then(data => {
-				croptablecolumns=new Object([]);
-			//	if (document.getElementById("funcgrid")) document.getElementById("funcgrid").innerHTML = "";
+				
+					
+				
                 let regexp=(JSON.parse(data));
 				let header=Object.keys(regexp[0]);
+				
+				if (croptablecolumns.length>0) {croptablecolumns=croptableconstcolumns.slice(0,header.length);
+					for (let i=0;i<header.length;i++) {
+				Object.defineProperty(croptablecolumns[i],'title',{value:header[i]});
+				Object.defineProperty(croptablecolumns[i],'valueGetter',{value:eval('e=>e.'+header[i])});
+				croptablecolumns[i]['hidden']=true;
+					}
+				}
+				 else {
 				for (let i=0;i<header.length;i++) {
 			   let myObj=new Column({
 						id : header[i],
@@ -1774,30 +1878,27 @@ getcolums=()=>croptablecolumns.slice()
 								  renderer : (v, e) => <a href={ e.url } target={"blank"}>{ v }</a>,
 						  filterable : true,
 						  sortable : true,
-						  valueGetter: e => e[header[i]]
+						  valueGetter: e => e[header[i]],
+						  hidden:false
 					  });
-			   //croptablecolumns[props][i]=myObj;
-			   croptablecolumns[i]=new Column({
-						id : header[i],
-						title: header[i],
-						width: 120,
-								  renderer : (v, e) => <a href={ e.url } target={"blank"}>{ v }</a>,
-						  filterable : true,
-						  sortable : true,
-						  valueGetter: e => e[header[i]]
-					  });
+					  croptableconstcolumns[i]=myObj;
+			   croptablecolumns[i]=myObj;
+				Object.defineProperty(croptablecolumns[i],'valueGetter',{value:eval('e=>e.'+header[i])})
+				
+				}
 				}
 				gridData=regexp.slice();
-				console.log(this.getcolums(croptablecolumns));
+				console.log(croptablecolumns)
 				currentDistrict=idproj;
 				currentDistrict_id=idproj;
+				
                 this.setState((state) => {
                     return {
+						tablevie:<div id='funcgrid' style={{top: '0%', position: 'absolute',height:'100%',width:'100%'}} >
+<FunctionalDataGrid onClick={()=>alert(';l;l')} columns={croptablecolumns.slice()} data={regexp} enableColumnsShowAndHide={true}/>
+</div>,
 						curs:propsa+'.',
 						curt:props,
-					tablevie: <div id='funcgrid' style={{top: '0%', position: 'absolute',height:'500px',width:'100%'}} >
-									<FunctionalDataGrid onClick={()=>alert(';l;l')} columns={this.getcolums()} data={regexp} enableColumnsShowAndHide={true}/>
-                                    </div>,
 									footer:              <div className='lower'>
 						 <Example
                                 render={()=>this.cropview(idproj)}
@@ -2337,7 +2438,7 @@ let seas='';
 
 
     renderSquare()
-    {
+    { console.log(this.state.tablevie);
         return this.state.tablevie;
     }
     delete() {
@@ -2781,17 +2882,18 @@ this.setState((state) => {
                     locale={this.state.locale}>
                     <div className='middle' style={{display:'inline-block'}}>
 					 
-                        <div className="treemiddle" id="treemiddle "style={{display:'inline-block'}}><Tabs projects={<FormattedMessage id='projects'/>} nsi=<FormattedMessage id='nsi' />  atdtree={ <App store={store} />}  project={<AppPro store={projectstore}/>} tree={<AppCrop store={cropstore}/>}/></div>
+                        <div className="treemiddle" id="treemiddle "style={{display:'inline-block'}}><Tabs projects={<FormattedMessage id='projects'/>} nsi=<FormattedMessage id='nsi' />  atdtree={ <App store={store} />}  project={<AppPro store={projectstore}/>} tree={<AppCrop store={cropstore}/>}/>
+						</div>
                         <div className="tablemiddle" id="base" style={{display:'inline-block'}}>
 						<span id='setDataGrid' onClick={()=>this.setDataGrid()}></span>
 						<span id='setSubpr' onClick={()=>this.rendersubpr(targetDevis_id,targetDevis_id)}></span>
 						<span id='setpr' onClick={()=>this.projectview(targetDevis_id,1)}></span>
 						<span id='setcrop' onClick={()=>this.cropview(targetDevis_id)}></span>
 						<h1>{this.state.curs}{this.state.curt}</h1>
-							<div id='func_grid'>
+							<div id='func_grid' style={{height: '100%'}}>
 								 <FunctionalDataGrid onClick={()=>alert(';l;l')} columns={columns} data={gridData} enableColumnsShowAndHide={true}/> 
 							</div>	 
-                            <div className='tablecels' >{this.renderSquare()}</div>
+                            <div id='tablecels' className='tablecels' >{this.renderSquare()}</div>
                             {this.state.footer}
                         </div>
                         <input type="file" accept=".xls,.xlsx" id="fileload" style={{display:'none'}}  onInput={(e)=>this.handleChange(e,this.state.curt,this.state.curs)} />
