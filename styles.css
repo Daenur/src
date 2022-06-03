@@ -73,7 +73,7 @@ button:hover {
 }
 .tablecels {
     width:100%;
-    height:80%;
+    height:100%;
     position:absolute;
     display: flex;
     justify-content: space-between;
@@ -395,4 +395,7 @@ box-sizing: border-box;
  .css-1mhygto:hover {
 	  color: #4DB6BC;
     background-color: #383F48;
+}
+.css-1y1k9mm {
+    height: 92% !important;
 }
