@@ -19,12 +19,13 @@ import { Map } from 'immutable';
 import { Tab, Tabs as TabsComponent, TabList, TabPanel } from "react-tabs";
 import FunctionalDataGrid, { Column, Group, Sort, filterRenderers, utils, ColumnGroup} from 'functional-data-grid'
 import MultipleSelect from 'multiple-select-js'
+
 let localhost='45.89.26.151';
 
 
 
 document.addEventListener("click",function(e)
-{		console.log(e.target.getAttribute('id'));
+{		
 if (e.target.getAttribute('id')=='react-tabs-8') {	
 	   fetch('http://'+localhost+':3001/FKselect/:crop.:crop_classification.:id_crop_cl')
             .then(response =>  response.text())
@@ -121,7 +122,6 @@ if (e.target.getAttribute('id')=='react-tabs-12') {
             });
 }
 	var selectorClick=e.target;
-	console.log( e.target.getAttribute('class'));
 if (e.target.getAttribute('class')==null) (selectorClick=e.target.parentElement)
 	if (selectorClick.getAttribute('class')=='functional-data-grid__cell-content css-17z9byi')
 	{	
@@ -139,15 +139,17 @@ const SubTabs =props => {
     return (
         <TabsComponent>
             <TabList>
-			<Tab key="10">{"Contract"}</Tab>
+			
 				<Tab key="11">{"Crop"}</Tab>
 				<Tab key="12">{"Season"}</Tab>
 			    <Tab key="13">{"ATD"}</Tab>
+				<Tab key="10">{"Contract"}</Tab>
             </TabList>
-			<TabPanel key="10">{props.contract}</TabPanel>
+			
 			<TabPanel key="11">{props.crop}</TabPanel>
             <TabPanel key="12">{props.season}</TabPanel>
 			<TabPanel key="13">{props.atd}</TabPanel>
+			<TabPanel key="10">{props.contract}</TabPanel>
         </TabsComponent>);
 }
 
@@ -781,6 +783,7 @@ function reducerUpdate(list,id_d,name)
 
 function ReduxAtdtable(id,childText,devis,path)
 {
+	
 	targetDevis_id=id
 	if (document.getElementById('tablevie')) document.getElementById('tablevie').innerHTML='';
 	document.getElementById('func_grid').hidden=false;
@@ -795,19 +798,20 @@ currentDistrict=childText;
 if (id!=0) {fetch("http://"+localhost+":3001/dist/:"+id.replace(/^"|"$/g, ''))
                             .then(response =>  response.text())
                             .then(data => {	
-						gridData=JSON.parse(data)
+						gridData=JSON.parse(data);
+						console.log(gridData);
 							 select=document.getElementById('setDataGrid'); 
-							select.click()						
-                            })
+							select.click();				
+                            });
 }
 else {
 		                fetch('http://'+localhost+':3001/state/')
                     .then(response =>  response.text())
                     .then(data => {
-						gridData=JSON.parse(data)
-						console.log(gridData)
+						gridData=JSON.parse(data);
+						console.log(gridData);
 							select=document.getElementById('setDataGrid'); 
-							select.click()
+							select.click();
 					});
 }
 } else alert('No lvl from type_devis')
@@ -1928,7 +1932,7 @@ rendercroptable()
                                 <FormattedMessage id='deletestr' />
                             </button>
                             <button style={{display: 'inline-block',width: '10%'}} >
-                                <CSVLink style={{color:'#C5C5C5'}}  data={this.csvreport()}    filename={currentDistrict+".csv"}><FormattedMessage id='uploadcsv' /></CSVLink>
+                                <CSVLink style={{color:'#2B3138'}}  data={this.csvreport()}    filename={currentDistrict+".csv"}><FormattedMessage id='uploadcsv' /></CSVLink>
                             </button>
                             <button style={{display: 'inline-block',width: '10%'}} onClick={()=>this.xslsreport(1)}><FormattedMessage id='uploadxsls' />
                             </button>
@@ -1974,10 +1978,9 @@ rendercroptable()
 		this.curt='id';
 		var arrayheader=[];
         var arraytable=[];
-        fetch('http://'+localhost+':3001/project/:Project1')
+        fetch('http://'+localhost+':3001/project/:'+idproj)
             .then(response =>  response.text())
             .then(data => {
-				console.log(data)
                 let regexp=(data.split(/\[(.+?)\]/));
 				console.log(regexp)
                 let regexpf=(regexp[1].split(/\{(.+?)\}/));
@@ -1998,7 +2001,7 @@ rendercroptable()
                     }
                 }
                 let headers=arrayheader.slice();
-
+				
                 for (let i = 0; i < regarcol.length; i++) {
                     for (let j = 0; j < regarcol[0].length; j++)
                     {
@@ -2006,19 +2009,21 @@ rendercroptable()
                     }
                 }
                 arrayheader[0]= arrayheader[0].substr(1);
-
-                for (let j = 0; j < headers.length; j++)
-                {
-                    headers[j]=headers[j].split('"').at(1);
-                }
+ headers[0]=headers[0].slice(1);
+          
+				
                 arraycart=arraytable.slice();
                 arraycarh=arrayheader;
                 this.state.arraytable=arraytable.slice();
                 this.state.arrayheader=arrayheader.slice();
+				
             }).then(
             fetch('http://'+localhost+':3001/subproject/:'+idid)
                 .then(response => response.text())
                 .then(data => {
+					let reggrid=(JSON.parse(data));
+					//let header=Object.keys(regexp[0]);
+					
                     let regexp = (data.split(/\[(.+?)\]/));
                     let regexpf = (regexp[1].split(/\{(.+?)\}/));
                     let cou = 0;
@@ -2045,16 +2050,7 @@ rendercroptable()
                     let headers = arrayheadersub.slice();
                     headers[0]=headers[0].substr(1);
 					
-                  //  for (let i = 0; i < regarcol.length; i++) {
-                  //      arraytablesub[arraytablesub.length] = this.renderspin("");
-                  //      for (let j = 0; j < regarcol[0].length; j++) {
-                   //         arraytablesub[arraytablesub.length] = this.renderprojspin(regarcol[i][j], arrayheadersub[j].length, 0, 85 / arrayheadersub.length + "%", regarcol[i][0]);
-                   //     }
-                   // }
-                  //  arrayheadersub[0] = arrayheadersub[0].substr(1);
-                   // for (let j = 0; j < arrayheadersub.length; j++) {
-                  //      arrayheadersub[j] = this.renderprojspin(arrayheadersub[j], arrayheadersub[j].length, 1, 85 / arrayheadersub.length + "%");
-                  //  }
+            
 
 
 
@@ -2090,19 +2086,21 @@ rendercroptable()
 						id_area:null,
 						crop:null,
 						season:null}
+						console.log(JSON.parse(data));
                                        return {
-                                curs: idproj,
-                                curt: "",
+                                curt: this.state.arraytable[3],
+                                curs: 'Project ',
                                 tablevie: 
-								<div style={{resize:'horizontal'}}>
-								<div style={{resize:'horizontal',width:"70%",position:'absolute'}}>
-								<FunctionalDataGrid onClick={()=>alert(';l;l')} columns={columnsSub} data={JSON.parse(data)} enableColumnsShowAndHide={true}/>
+								<div style={{height:"100%",display: "flex"}}>
+								<div style={{width:"80%",height:"100%",resize:"horizontal",overflow: "auto"}}>
+								<FunctionalDataGrid onClick={()=>alert(';l;l')} columns={columnsSub} data={reggrid} enableColumnsShowAndHide={true}/>
 								</div>
-								<div style={{resize:'horizontal',width:"27%",top:'-10%',height:"30%",position:'absolute',left:'72%'}}>
+								<div style={{overflow: "auto",border:"1px solid #505A66",height:"120%",width:'30%',left:'75%'}}>
 								<SubTabs 
-								crop={<div style={{height:"30%"}}><FunctionalDataGrid onClick={()=>alert(';l;l')} columns={cropcolumns} data={subcropData}/><td className="subbutton"><select   id="cropselect" style={{width: '40%'}} >{this.cropcombobox()}</select><button style={{background: '#5B9138'}} onClick={()=>this.insertcrop(idproj,idid)}>+</button><button style={{background: '#ff0000'}} onClick={()=>this.delcrop(idproj)}>-</button></td></div>}
-								contract={<div style={{height:"30%"}}><div id='tablevie' style={{height:"50%"}}>
-<table style={{width:"100%",height:"100%",display: 'inline-block'}}>
+								crop={<div style={{height:"550px",width:"100%"}}><FunctionalDataGrid onClick={()=>alert(';l;l')} columns={cropcolumns} data={subcropData}/><td className="subbutton"><select   id="cropselect" style={{width: '40%'}} >{this.cropcombobox()}</select><button style={{background: '#5B9138'}} onClick={()=>this.insertcrop(idproj,idid)}>+</button><button style={{background: '#ff0000'}} onClick={()=>this.delcrop(idproj)}>-</button></td></div>}
+								contract={<div style={{height:"100%"}}>
+								<div id='tablevie' style={{height:"100%"}}>
+<table style={{width:"100%",height:"100%"}}>
 <table className="Projectbody" style={{width:"100%",height:"100%"}}>
 <td ><FormattedMessage id='directorh' >{placeholder => <input type='text' value={placeholder} />}</FormattedMessage><input style={{width: '38%'}} type='text' value='Ivanov' /> </td>
 <td ><FormattedMessage id='contract' >{placeholder => <input type='text' value={placeholder} />}</FormattedMessage><input style={{width: '38%'}} type='text' value={this.state.arraytable[1]} /> </td>
@@ -2113,48 +2111,13 @@ rendercroptable()
 <td><button onClick={()=>this.generateSubproject(idproj,subcropData,subatdData,subseasonData,this.state.arraytable[4],this.state.arraytable[5],this.state.arraytable[6],idproj,idid)} style={{display: 'inline-block',width: '100%',height: '40px'}} ><FormattedMessage id='generate' /></button></td>
 </table>
 </table></div></div>}
-								atd={<div style={{height:"30%"}}><FunctionalDataGrid onClick={()=>alert(';l;l')} columns={atdcolumns} data={subatdData}/><td className="subbutton"><select id="areaselect" style={{width: '40%'}} ></select><button style={{background: '#5B9138'}} onClick={()=>this.insertarea(idproj,idid)}>+</button><button style={{background: '#ff0000'}} onClick={()=>this.delarea(idproj)}>-</button></td></div>}
-								season={<div style={{height:"30%"}}><FunctionalDataGrid onClick={()=>alert(';l;l')} columns={seasoncolumns} data={subseasonData}/><td className="subbutton"><select  id="seasonselect" style={{width: '40%'}} ></select><button style={{background: '#5B9138'}} onClick={()=>this.insertseason(idproj,idid)}>+</button><button style={{background: '#ff0000'}} onClick={()=>this.delseason(idproj)}>-</button></td></div>}
+								atd={<div style={{height:"550px"}}><FunctionalDataGrid onClick={()=>alert(';l;l')} columns={atdcolumns} data={subatdData}/><td className="subbutton"><select id="areaselect" style={{width: '40%'}} ></select><button style={{background: '#5B9138'}} onClick={()=>this.insertarea(idproj,idid)}>+</button><button style={{background: '#ff0000'}} onClick={()=>this.delarea(idproj)}>-</button></td></div>}
+								season={<div style={{height:"550px"}}><FunctionalDataGrid onClick={()=>alert(';l;l')} columns={seasoncolumns} data={subseasonData}/><td className="subbutton"><select  id="seasonselect" style={{width: '40%'}} ></select><button style={{background: '#5B9138'}} onClick={()=>this.insertseason(idproj,idid)}>+</button><button style={{background: '#ff0000'}} onClick={()=>this.delseason(idproj)}>-</button></td></div>}
 								/>
 						
 								</div>
 								</div>,
-								footer: <div className='lower' style={{top:"90%"}}>
-<Example
 
-render={(name,id)=>this.updateTree(name,id)}
-subcrop={(this.state.arraytable[8].replace(/"/g, '')).split(",")}
-subarea={(this.state.arraytable[8].replace(/"/g, '')).split(",")}
-subdiv={(this.state.arraytable[8].replace(/"/g, '')).split(",")}
-curcol={exampleData}
-curt={targetDevis_id}
-curs={'Project id '}
-truestatus="input"
-text=<FormattedMessage id='inputsubp' />
-status=<FormattedMessage id='inputtxt' />
-/>
-<Example
-subcrop={(this.state.arraytable[8].replace(/"/g, '')).split(",")}
-subarea={(this.state.arraytable[8].replace(/"/g, '')).split(",")}
-subdiv={(this.state.arraytable[8].replace(/"/g, '')).split(",")}
-render={(name,id)=>this.updateTreerename(name,id)}
-curcol={exampleData}
-curs={this.state.curs}
-curt={currentDistrict}
-
-id_p={currentDistrict_id}
-truestatus='update'
-id_dtype={targetDevis_id+1}
-text=<FormattedMessage id='update' />
-status=<FormattedMessage id='updatetxt' />
-/>
-<button style={{display: 'inline-block',width: '10%',height: '50px'}} onClick={() => this.delete()}>
-<FormattedMessage id='deletesubp' />
-</button>
-<button style={{display: 'inline-block',width: '10%',height: '50px'}} onClick={() => this.delete()}>
-<FormattedMessage id='uploadxsls' />
-</button>
-</div>
                                
                             }
 
@@ -2526,7 +2489,7 @@ let seas='';
 			
         };
         reader.readAsBinaryString(event.target.files[0]);
-		
+	
 return select.click();
     }
 
@@ -2566,6 +2529,7 @@ return select.click();
     }).then(
     function(response) {
         if (response.status == 200) {
+			
 			if (id_dtype>1) {var type_link=id_dtype-1;
 			fetch('http://'+localhost+':3001/insertcus/:'+idArray[0]+','+id_p+','+type_link+'.:id_area,id_parent_area,id_type_link.:link_up_down.:atd', {
         method: 'POST',
@@ -2576,11 +2540,24 @@ return select.click();
 			
 			
 			}
-			gridData.push((idArray));
 			
 			
+			let newrow=new Object();
+			
+			
+			newrow['id_area']=textrow[0].replace(/'/g,'');
+			newrow['country']='India';
+			newrow['devis']=arrayDevis[currentDistrict_id-1]['name_devis'];
+			newrow['name_full']=textrow[3].replace(/'/g,'');
+			newrow['name_shot']=textrow[4].replace(/'/g,'');
+			newrow['code_devision']=textrow[5].replace(/'/g,'');
+			newrow['date_start']=textrow[6].replace(/'/g,'');
+			newrow['date_end']=textrow[7].replace(/'/g,'');
+			newrow['shape']='Not Input';
+				gridData=gridData.concat(newrow);
 			store.dispatch(act_add(idArray[3].slice(1,-1), targetPath,idArray[0].slice(1,-1),targetDevis_id+1));
-			return ReduxAtdtable(currentDistrict_id,currentDistrict,targetDevis_id,targetPath);
+				select=document.getElementById('setDataGrid'); 
+			select.click();	
 			
 			}
 			else {console.log(response)}
@@ -2794,12 +2771,14 @@ return select.click();
         alert(proj+this.state.checkarea) ;
     }
 
-updateTree(name,id)
+updateTree(name,id,obj)
 {
-	
+	gridData=gridData.concat(obj);
+	select=document.getElementById('setDataGrid'); 
+	select.click();	
 	store.dispatch(act_add(name, targetPath,id.slice(1,-1),targetDevis_id+1));
-	ReduxAtdtable(currentDistrict_id,currentDistrict,targetDevis_id,targetPath);
-	select.click()
+	
+
 }
 updateTreerename(name,id)
 {
@@ -2835,7 +2814,7 @@ this.setState((state) => {
 						curt:currentDistrict,
 						footer:              <div className='lower'>
 						 <Example
-                                render={(name,id)=>this.updateTree(name,id)}
+                                render={(name,id,obj)=>this.updateTree(name,id,obj)}
                                 curcol={exampleData}
                                 curs={this.state.curs}
                                 curt={currentDistrict}
@@ -2862,7 +2841,7 @@ this.setState((state) => {
                                 <FormattedMessage id='deletestr' />
                             </button>
                             <button style={{display: 'inline-block',width: '10%'}} >
-                                <CSVLink style={{color:'#C5C5C5'}}  data={this.csvreport()}    filename={currentDistrict+".csv"}><FormattedMessage id='uploadcsv' /></CSVLink>
+                                <CSVLink style={{color:'#2B3138'}}  data={this.csvreport()}    filename={currentDistrict+".csv"}><FormattedMessage id='uploadcsv' /></CSVLink>
                             </button>
                             <button style={{display: 'inline-block',width: '10%'}} onClick={()=>this.xslsreport()}><FormattedMessage id='uploadxsls' />
                             </button>
