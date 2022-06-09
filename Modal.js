@@ -1,5 +1,5 @@
 let localhostm='45.89.26.151';
-function FKcombo(curs,curt,curcol,status,textnum) {
+function FKcombo(curs,curt,curcol,status,textnum,row) {
     fetch('http://'+localhostm+':3001/FK/:'+curs+'.:'+curt)
         .then(response =>  response.text())
         .then(data => {
@@ -45,8 +45,10 @@ function FKcombo(curs,curt,curcol,status,textnum) {
 
                     }
                     if (selectbool==0) {
-                     if ((i==0) && (status=="update"))   div.innerHTML += "<td>" + curcol[i] + "<input value=\"" + textnum() + "\" disabled name=\"Names\" id=\"" + curcol[i] + status + "\"></td>"
-                        else div.innerHTML += "<td>" + curcol[i] + "<input  name=\"Names\" id=\"" + curcol[i] + status + "\"></td>"
+                     if (status=="update")   {if (i==0) div.innerHTML += "<td>" + curcol[i] + "<input value=\"" + textnum + "\" disabled name=\"Names\" id=\"" + curcol[i] + status + "\"></td>";
+					 else div.innerHTML += "<td>" + curcol[i] + "<input value=\""+row[curcol[i]]+"\"+ name=\"Names\" id=\"" + curcol[i] + status + "\"></td>";
+					 }
+                        else div.innerHTML += "<td>" + curcol[i] + "<input  name=\"Names\" id=\"" + curcol[i] + status + "\"></td>";
                     }
                 }
             }
@@ -142,17 +144,17 @@ function atdRows(curOb,status,textnum,row,curt)
 {
 	var	curcol=Object.keys(curOb);
 	if (curt.includes('##')) {curcol=Object.values(curOb); 
-	
-	if ((status=="update")) {
-if (row!=null) {console.log(row)
+	var div = document.getElementById('modal_content'+status);
+	if ((status=="update5")) {
+if (row!=null) {
 
-var div = document.getElementById('modal_content'+status);
+
 if (div!=null) {
 div.innerHTML="";
 for (let i=0; i< curcol.length;i++)
 {
-
-if (i==0) {div.innerHTML += "<td>" + curcol[i] + "<input value=\"" + row[curcol[i]] + "\" disabled name=\"Names\" id=\"" + curcol[i] + status + "\"></td>"}
+if (i==0) {div.innerHTML += "<td>" + curcol[i] + "<input value=\"" + row[curcol[i]] + "\" disabled name=\"Names\" id=\"" + curcol[i] + status + "\"></td>"
+		}
 
 
 else
@@ -161,20 +163,18 @@ if (row[curcol[i]]==null) row[curcol[i]]=''
 if (curcol[i]=='country') {div.innerHTML += "<td>" + curcol[i] + "<input value=\"" + curOb.country+ "\" disabled name=\"Names\" id=\"" + curcol[i] + status + "\"></td>" }
 else {
 if (curcol[i]=='devis') {div.innerHTML += "<td>" + curcol[i] + "<input value=\"" + curOb.devis + "\" disabled name=\"Names\" id=\"" + curcol[i] + status + "\"></td>"} else
-
-
 div.innerHTML += "<td>" + curcol[i] + "<input value=\""+row[curcol[i]]+"\"+ name=\"Names\" id=\"" + curcol[i] + status + "\"></td>"}
 }
 
 }
-}}
+}
+}
 }
 else {
 
-var div = document.getElementById('modal_content'+status);
 if (div!=null) {
 div.innerHTML="";
-FKcombo(curt.split('##')[1],curt.split('##')[0],curcol,status);
+FKcombo(curt.split('##')[1],curt.split('##')[0],curcol,status,row[curcol[0]],row);
 
 }
 }
@@ -277,7 +277,8 @@ let curt=props.curt;
 
 function info_area_insert(textrow,props)
 { 
-if (props.curt.includes('##')) { 
+if (props.curt.includes('##')) 
+{ 
 	    fetch('http://'+localhostm+':3001/insert/:'+textrow+'.:'+props.curt.split('##')[0]+'.:'+props.curt.split('##')[1], {
         method: 'POST',
         headers: {
@@ -297,6 +298,19 @@ if (props.curt.includes('##')) {
     }).then(
     function(response) {
         if (response.status == 200) {
+			let newrow=new Object();
+			let textrowAr=textrow.replace(/'/g,'').split(',');
+			newrow['id_area']=textrowAr[0];
+			newrow['country']='India';
+			newrow['devis']=props.curcol['devis'];
+			newrow['name_full']=textrowAr[3];
+			newrow['name_shot']=textrowAr[4];
+			newrow['code_devision']=textrowAr[5];
+			newrow['date_start']=textrowAr[6];
+			newrow['date_end']=textrowAr[7];
+			newrow['shape']='Not Input';
+		
+			 (props.render(idArray[3].slice(1,-1),idArray[0],newrow)); 
 			if (props.id_dtype>1) {var type_link=props.id_dtype-1;
 			fetch('http://'+localhostm+':3001/insertcus/:'+idArray[0]+','+props.id_p+','+type_link+'.:id_area,id_parent_area,id_type_link.:link_up_down.:atd', {
         method: 'POST',
@@ -307,7 +321,7 @@ if (props.curt.includes('##')) {
 			
 			
 			}
-            return (props.render(idArray[3].slice(1,-1),idArray[0]));  }
+             }
 			else {console.log(response)}
 			});
 }}
