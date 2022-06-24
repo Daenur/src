@@ -569,31 +569,31 @@ let columnspro = [
     valueGetter: e => e.status,
   }),
       new Column({
-    id : 'season',
-    title: 'season',
+    id : 'seasons',
+    title: 'seasons',
     width: 120,
 		      renderer : (v, e) => <a href={ e.url } target={"blank"}>{ v }</a>,
       filterable : true,
 	  sortable : true,
-    valueGetter: e => e.season,
+    valueGetter: e => e.seasons,
   }),
   new Column({
-    id : 'devision',
-    title: 'devision',
+    id : 'devisions',
+    title: 'devisions',
     width: 120,
 		      renderer : (v, e) => <a href={ e.url } target={"blank"}>{ v }</a>,
       filterable : true,
 	  sortable : true,
-    valueGetter: e => e.devision,
+    valueGetter: e => e.devisions,
   }),
   new Column({
-    id : 'crop',
-    title: 'crop',
+    id : 'crops',
+    title: 'crops',
     width: 120,
 		      renderer : (v, e) => <a href={ e.url } target={"blank"}>{ v }</a>,
       filterable : true,
 	  sortable : true,
-    valueGetter: e => e.crop,
+    valueGetter: e => e.crops,
   })
 ]
 let gridData=[]
@@ -1805,7 +1805,7 @@ renderAtd()
                     return {
                         tableview:regarcol,
                         curcol: headers,
-                        curs:idproj.replace(/"/g,''),
+                        curs:'Projects',
                         curt:"",
                         tablevie: <div style={{top: '0%', position: 'absolute',height:'500px',width:'100%'}} >
 									<FunctionalDataGrid onClick={()=>alert(';l;l')} columns={columnspro} data={JSON.parse(data)} enableColumnsShowAndHide={true}/>
@@ -1861,21 +1861,41 @@ rendercroptable()
             .then(response =>  response.text())
             .then(data => {
 				
-					
+			
 				
                 let regexp=(JSON.parse(data));
 				let header=Object.keys(regexp[0]);
-				
-				if (croptablecolumns.length>0) {croptablecolumns=croptableconstcolumns.slice(0,header.length);
+				if (croptablecolumns.length>0) {
+					croptablecolumns=croptableconstcolumns.slice(0,10);
 					for (let i=0;i<header.length;i++) {
 				Object.defineProperty(croptablecolumns[i],'title',{value:header[i]});
 				Object.defineProperty(croptablecolumns[i],'valueGetter',{value:eval('e=>e.'+header[i])});
-				croptablecolumns[i]['hidden']=true;
+				//croptablecolumns[i]['hidden']=true;
 					}
+					
 				}
-				 else {
-				for (let i=0;i<header.length;i++) {
-			   let myObj=new Column({
+				
+				 else 
+				 {
+				for (let i=0;i<9;i++) {
+			if (header[i]==undefined) 
+			{
+		let myObj=new Column({
+						id : 'test',
+						title: 'test',
+						width: 120,
+								  renderer : (v, e) => <a href={ e.url } target={"blank"}>{ v }</a>,
+						  filterable : true,
+						  sortable : true,
+						  valueGetter: e => e['test'],
+						  hidden:false
+			});
+					 croptableconstcolumns[i]=Object.assign({},myObj);
+			   croptablecolumns[i]=Object.assign({},myObj);
+			Object.defineProperty(croptablecolumns[i],'valueGetter',{value:eval('e=>e.'+'test')})
+		
+		} else {
+				let myObj=new Column({
 						id : header[i],
 						title: header[i],
 						width: 120,
@@ -1884,22 +1904,24 @@ rendercroptable()
 						  sortable : true,
 						  valueGetter: e => e[header[i]],
 						  hidden:false
-					  });
-					  croptableconstcolumns[i]=myObj;
-			   croptablecolumns[i]=myObj;
-				Object.defineProperty(croptablecolumns[i],'valueGetter',{value:eval('e=>e.'+header[i])})
+			});
+					 croptableconstcolumns[i]=Object.assign({},myObj);
+			   croptablecolumns[i]=Object.assign({},myObj);
+			Object.defineProperty(croptablecolumns[i],'valueGetter',{value:eval('e=>e.'+header[i])})
+			}
 				
 				}
 				}
 				gridData=regexp.slice();
-				console.log(croptablecolumns)
 				currentDistrict=idproj;
 				currentDistrict_id=idproj;
-				
+				console.log(croptablecolumns);
+				croptablecolumns=croptablecolumns.slice(0,header.length);
+				console.log(croptablecolumns);
                 this.setState((state) => {
                     return {
 						tablevie:<div id='funcgrid' style={{top: '0%', position: 'absolute',height:'100%',width:'100%'}} >
-<FunctionalDataGrid onClick={()=>alert(';l;l')} columns={croptablecolumns.slice()} data={regexp} enableColumnsShowAndHide={true}/>
+<FunctionalDataGrid onClick={()=>alert(';l;l')} columns={croptablecolumns} data={regexp} enableColumnsShowAndHide={true}/>
 </div>,
 						curs:propsa+'.',
 						curt:props,
