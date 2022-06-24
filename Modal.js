@@ -1,5 +1,5 @@
 let localhostm='45.89.26.151';
-function FKcombo(curs,curt,curcol,status,textnum,row) {
+function FKcombo(curs,curt,curcol,status,row,textnum) {
     fetch('http://'+localhostm+':3001/FK/:'+curs+'.:'+curt)
         .then(response =>  response.text())
         .then(data => {
@@ -145,28 +145,13 @@ function atdRows(curOb,status,textnum,row,curt)
 	var	curcol=Object.keys(curOb);
 	if (curt.includes('##')) {curcol=Object.values(curOb); 
 	var div = document.getElementById('modal_content'+status);
-	if ((status=="update5")) {
+	if ((status=="update")) {
 if (row!=null) {
 
 
 if (div!=null) {
-div.innerHTML="";
-for (let i=0; i< curcol.length;i++)
-{
-if (i==0) {div.innerHTML += "<td>" + curcol[i] + "<input value=\"" + row[curcol[i]] + "\" disabled name=\"Names\" id=\"" + curcol[i] + status + "\"></td>"
-		}
-
-
-else
-{
-if (row[curcol[i]]==null) row[curcol[i]]=''
-if (curcol[i]=='country') {div.innerHTML += "<td>" + curcol[i] + "<input value=\"" + curOb.country+ "\" disabled name=\"Names\" id=\"" + curcol[i] + status + "\"></td>" }
-else {
-if (curcol[i]=='devis') {div.innerHTML += "<td>" + curcol[i] + "<input value=\"" + curOb.devis + "\" disabled name=\"Names\" id=\"" + curcol[i] + status + "\"></td>"} else
-div.innerHTML += "<td>" + curcol[i] + "<input value=\""+row[curcol[i]]+"\"+ name=\"Names\" id=\"" + curcol[i] + status + "\"></td>"}
-}
-
-}
+	div.innerHTML="";
+FKcombo(curt.split('##')[1],curt.split('##')[0],curcol,status,row,row[curcol[0]]);
 }
 }
 }
@@ -174,7 +159,8 @@ else {
 
 if (div!=null) {
 div.innerHTML="";
-FKcombo(curt.split('##')[1],curt.split('##')[0],curcol,status,row[curcol[0]],row);
+console.log(row);
+FKcombo(curt.split('##')[1],curt.split('##')[0],curcol,status,row);
 
 }
 }
