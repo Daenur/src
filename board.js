@@ -19,9 +19,9 @@ import { Map } from 'immutable';
 import { Tab, Tabs as TabsComponent, TabList, TabPanel } from "react-tabs";
 import FunctionalDataGrid, { Column, Group, Sort, filterRenderers, utils, ColumnGroup} from 'functional-data-grid'
 import MultipleSelect from 'multiple-select-js'
-
+let atdlvlcount='';
 let localhost='45.89.26.151';
-
+//let localhost='localhost';
 
 
 document.addEventListener("click",function(e)
@@ -221,8 +221,8 @@ let croptableconstcolumns = [
     valueGetter: e => e.code_devision,
   }),
       new Column({
-    id : 'date_start1',
-    title: 'date_start1',
+    id : 'date_start',
+    title: 'date_start',
     width: 120,
 		      renderer : (v, e) => <a href={ e.url } target={"blank"}>{ v }</a>,
       filterable : true,
@@ -236,7 +236,25 @@ let croptableconstcolumns = [
 		      renderer : (v, e) => <a href={ e.url } target={"blank"}>{ v }</a>,
       filterable : true,
 	  sortable : true,
-    valueGetter: e => e.date_start,
+    valueGetter: e => e.date_end,
+  }),
+        new Column({
+    id : 'date_end2',
+    title: 'date_end3',
+    width: 120,
+		      renderer : (v, e) => <a href={ e.url } target={"blank"}>{ v }</a>,
+      filterable : true,
+	  sortable : true,
+    valueGetter: e => e.date_end2,
+  }),
+        new Column({
+    id : 'date_end3',
+    title: 'date_end3',
+    width: 120,
+		      renderer : (v, e) => <a href={ e.url } target={"blank"}>{ v }</a>,
+      filterable : true,
+	  sortable : true,
+    valueGetter: e => e.date_end3,
   }),
       new Column({
     id : 'shape',
@@ -524,7 +542,7 @@ let columnspro = [
   }),
     new Column({
     id : 'name_project',
-    title: 'name_projecth',
+    title: 'name_project',
     width: 120,
 	renderer : (v, e) => <a href={ e.url }  target={"blank"}>{ v }</a>,
       filterable : true,
@@ -792,17 +810,24 @@ targetHover=null;
 currentDistrict_id=id
 if (arrayDevis.length>devis) {targetDevis=(arrayDevis[devis].name_devis)
 	targetDevis_id=devis;
-targetPath=path
-
+targetPath=path;
 currentDistrict=childText;
 if (id!=0) {fetch("http://"+localhost+":3001/dist/:"+id.replace(/^"|"$/g, ''))
                             .then(response =>  response.text())
                             .then(data => {	
 						gridData=JSON.parse(data);
 						console.log(gridData);
-							 select=document.getElementById('setDataGrid'); 
-							select.click();				
-                            });
+				fetch("http://"+localhost+":3001/api/lvlcount/?id="+id+'&lvl='+(devis-1))
+                            .then(response =>  response.text())
+                            .then(data => {	
+						let lvlcount=(JSON.parse(data));
+									 atdlvlcount=arrayDevis[devis-1].name_devis+' contains : ';
+								for (let i=1;i<Object.keys(lvlcount).length;i++)	atdlvlcount=atdlvlcount+Object.keys(lvlcount)[i]+' = '+Object.values(lvlcount)[i]+' ';
+									select=document.getElementById('setDataGrid'); 
+							select.click();	
+                            });	
+				 				
+});							
 }
 else {
 		                fetch('http://'+localhost+':3001/state/')
@@ -810,9 +835,18 @@ else {
                     .then(data => {
 						gridData=JSON.parse(data);
 						console.log(gridData);
-							select=document.getElementById('setDataGrid'); 
+							
+					
+							fetch("http://"+localhost+":3001/api/indiacount/")
+                            .then(response =>  response.text())
+                            .then(data => {	
+						let lvlcount=(JSON.parse(data));
+									 atdlvlcount='India contains : ';
+								for (let i=0;i<Object.keys(lvlcount).length;i++)	atdlvlcount=atdlvlcount+Object.keys(lvlcount)[i]+' = '+Object.values(lvlcount)[i]+' ';
+									select=document.getElementById('setDataGrid'); 
 							select.click();
-					});
+                            });	
+							});
 }
 } else alert('No lvl from type_devis')
 return 0;
@@ -1319,7 +1353,7 @@ class Board extends Component {
                 for (let i = 0; i < arraytable.length; i++) {
                     let prefinish = arraytable[i].split(":").at(1);
                     arraytable[i] = (prefinish.split('"').at(1));
-                    if ((arraytable[i] != "atd") && (arraytable[i] != "log") && (arraytable[i] != "other") && (arraytable[i] != "mobile_app") && (arraytable[i] != "crop") && (arraytable[i] != "soil")) arraytable[i]=null;
+                   if ((arraytable[i] == "about_nsi") || (arraytable[i] == "area_map") || (arraytable[i] == "atd") || (arraytable[i] == "log") || (arraytable[i] == "projects") || (arraytable[i] == "public") || (arraytable[i] == "tiger") || (arraytable[i] == "tiger_data") || (arraytable[i] == "topology")) arraytable[i]=null;
 
                 }
                 let arraytablef2 = arraytable.filter(function (el) {
@@ -1452,26 +1486,32 @@ class Board extends Component {
                                 let regexp= JSON.parse(data)
 								let cou=0;
                                 for (let i = 0; i < regexp.length; i++) {
-                                 { 
-								if ((regexp[i]['nspname']=='crop') || (regexp[i]['nspname']=='other') || (regexp[i]['nspname']=='soil') || (regexp[i]['nspname']=='mobile_app'))
-								 {cropstore.dispatch(act_add(regexp[i]['nspname'], [],i,1));
-									fetch('http://'+localhost+':3001/schema/:' + regexp[i]['nspname'])
-                            .then(response =>  response.text())
-                           .then(data => {
-                                 let regexp2= JSON.parse(data)
-                                if (regexp[i]['nspname']=='crop') cou=0;
-								if (regexp[i]['nspname']=='mobile_app') cou=1;
-								if (regexp[i]['nspname']=='other') cou=2;
-								if (regexp[i]['nspname']=='soil') cou=3;
-                               for (let j = 0; j < regexp2.length; j++) {
-                                 { 
-								 cropstore.dispatch(act_add((regexp2[j])['table_name']+'##'+regexp[i]['nspname'], [cou],i,1));}
-                                }
-								//cou=cou+1;
-                            });
-							
-							 }
-							 }
+                           {
+if ((regexp[i]['nspname'] != "about_nsi") && (regexp[i]['nspname'] != "area_map") && (regexp[i]['nspname'] != "atd") && (regexp[i]['nspname'] != "log") && (regexp[i]['nspname'] != "projects") && (regexp[i]['nspname'] != "public") && (regexp[i]['nspname'] != "tiger") && (regexp[i]['nspname'] != "tiger_data") && (regexp[i]['nspname'] != "topology") && (regexp[i]['nspname'] != "pg_toast") && (regexp[i]['nspname'] != "pg_temp_1") && (regexp[i]['nspname'] != "pg_toast_temp_1") && (regexp[i]['nspname'] != "pg_catalog") && (regexp[i]['nspname']!="information_schema") )
+{cropstore.dispatch(act_add(regexp[i]['nspname'], [],i,1));
+fetch('http://'+localhost+':3001/schema/:' + regexp[i]['nspname'])
+.then(response => response.text())
+.then(data => {
+let regexp2= JSON.parse(data)
+
+if (regexp[i]['nspname']=='crop') cou=0;
+if (regexp[i]['nspname']=='mobile_app') cou=1;
+if (regexp[i]['nspname']=='other') cou=2;
+if (regexp[i]['nspname']=='soil') cou=3;
+if (regexp[i]['nspname']=='rse') cou=4;
+
+
+for (let j = 0; j < regexp2.length; j++) {
+{
+
+
+cropstore.dispatch(act_add((regexp2[j])['table_name']+'##'+regexp[i]['nspname'], [cou],i,1));}
+}
+cou=5;
+});
+
+}
+						   }
                                 }
                             
                             });
@@ -1793,14 +1833,25 @@ renderAtd()
                         arraytable[arraytable.length]=this.renderprojspin(regarcol[i][j],arrayheader[j].length,0,85/arrayheader.length+"%",regarcol[i][0]);
                     }
                 }
-
+gridData=JSON.parse(data);
                 for (let j = 0; j < arrayheader.length; j++)
                 {
 
                     arrayheader[j]=this.renderprojspin(arrayheader[j],arrayheader[j].length,1,85/arrayheader.length+"%");
                 }
 
-
+	exampleData={
+								 id_project: targetDevis_id,
+								 id_contract: null,
+						id_country: null,
+						name_project: null,
+						date_start:null,
+						date_plan_finish:null,
+						date_finish:null,
+						status:null,
+						seasons:null,
+						devisions:null,
+						crops:null,}
                 this.setState((state) => {
                     return {
                         tableview:regarcol,
@@ -1810,26 +1861,38 @@ renderAtd()
                         tablevie: <div style={{top: '0%', position: 'absolute',height:'500px',width:'100%'}} >
 									<FunctionalDataGrid onClick={()=>alert(';l;l')} columns={columnspro} data={JSON.parse(data)} enableColumnsShowAndHide={true}/>
                                     </div>,
-                        footer: <div className='lower'>
-                            <Example
-                                render={()=>this.renderorder(headers[0])}
-                                curcol={headers}
-                                curs={idproj}
-                                curt=""
-                                truestatus="input"
-                                text=<FormattedMessage id='inputp' />
-                            status=<FormattedMessage id='inputtxt' />
-                            />
-                            <Example
-                                render={()=>this.renderorder(headers[0])}
-                                curcol={headers}
-                                curs={idproj}
-                                curt=""
-                                truestatus='update'
-                                text=<FormattedMessage id='updatep' />
-                            status=<FormattedMessage id='updatetxt' />
-                            />
-                        </div>
+                        footer:              <div className='lower'>
+								     <Example
+                                        render={()=>this.projectview()}
+                                        curcol={exampleData}
+									   curs=''
+                                        curt="Project"
+                                        textnum={()=>this.textnumget()}
+                                        truestatus="input"
+                                        text=<FormattedMessage id='inputp' />
+                                    status=<FormattedMessage id='inputtxt' />
+                                    />
+                                    <Example
+                                        render={()=>this.projectview()}
+                                        curcol={exampleData}
+									   curs=''
+                                        curt="Project"
+                                        textnum={()=>this.textnumget()}
+                                        truestatus="input"
+                                        text=<FormattedMessage id='updatep' />
+                                    status=<FormattedMessage id='updatetxt' />
+                                    />
+                            <button style={{display: 'inline-block',width: '10%',height: '50px'}} onClick={() => this.delete()}>
+                                <FormattedMessage id='deletestr' />
+                            </button>
+                            <button style={{display: 'inline-block',width: '10%'}} >
+                                <CSVLink style={{color:'#2B3138'}}  data={this.csvreport()}    filename={"Projects.csv"}><FormattedMessage id='uploadcsv' /></CSVLink>
+                            </button>
+                            <button style={{display: 'inline-block',width: '10%'}} onClick={()=>this.xslsreport()}><FormattedMessage id='uploadxsls' />
+                            </button>
+                            <button style={{display: 'inline-block',width: '10%'}} onClick={()=>document.getElementById('fileload').click()}><FormattedMessage id='load' />
+                            </button>
+							</div>
                     }
 
                 });
@@ -1877,7 +1940,7 @@ rendercroptable()
 				
 				 else 
 				 {
-				for (let i=0;i<9;i++) {
+				for (let i=0;i<11;i++) {
 			if (header[i]==undefined) 
 			{
 		let myObj=new Column({
@@ -2080,9 +2143,14 @@ rendercroptable()
 
 
                         this.setState((state) => {
+							
+							gridData=reggrid;
                             let croparray=(this.state.arraytable[8].replace(/"/g, '')).split(",");
                             let divarray=(this.state.arraytable[9].replace(/"/g, '')).split(",");
                             let seasarray=(this.state.arraytable[10].replace(/"/g, '')).split(",");
+							subcropData=[];
+							subatdData=[];
+							subseasonData=[];
                             for (let j = 0; j < croparray.length; j++) {
 								subcropData.push({id_crop:croparray[j].split("&&")[1],name:croparray[j].split("&&")[0]})
                                 croparray[j] = <td ><input style={{width: '30%'}}  value={croparray[j].split("&&")[1]} /><input style={{width: '64%'}}  value={croparray[j].split("&&")[0]} /> </td>
@@ -2115,11 +2183,11 @@ rendercroptable()
                                 tablevie: 
 								<div style={{height:"100%",display: "flex"}}>
 								<div style={{width:"80%",height:"100%",resize:"horizontal",overflow: "auto"}}>
-								<FunctionalDataGrid onClick={()=>alert(';l;l')} columns={columnsSub} data={reggrid} enableColumnsShowAndHide={true}/>
+								<FunctionalDataGrid onClick={()=>alert(';l;l')} columns={columnsSub} data={gridData} enableColumnsShowAndHide={true}/>
 								</div>
 								<div style={{overflow: "auto",border:"1px solid #505A66",height:"120%",width:'30%',left:'75%'}}>
 								<SubTabs 
-								crop={<div style={{height:"550px",width:"100%"}}><FunctionalDataGrid onClick={()=>alert(';l;l')} columns={cropcolumns} data={subcropData}/><td className="subbutton"><select   id="cropselect" style={{width: '40%'}} >{this.cropcombobox()}</select><button style={{background: '#5B9138'}} onClick={()=>this.insertcrop(idproj,idid)}>+</button><button style={{background: '#ff0000'}} onClick={()=>this.delcrop(idproj)}>-</button></td></div>}
+								crop={<div style={{height:"550px",width:"100%"}}><FunctionalDataGrid onClick={()=>alert(';l;l')} columns={cropcolumns} data={subcropData}/><td className="subbutton"><select   id="cropselect" style={{width: '40%'}} ></select><button style={{background: '#5B9138'}} onClick={()=>this.insertcrop(idproj,idid)}>+</button><button style={{background: '#ff0000'}} onClick={()=>this.delcrop(idproj)}>-</button></td></div>}
 								contract={<div style={{height:"100%"}}>
 								<div id='tablevie' style={{height:"100%"}}>
 <table style={{width:"100%",height:"100%"}}>
@@ -2130,7 +2198,6 @@ rendercroptable()
 <td><FormattedMessage id='datefp' >{placeholder => <input type='text' value={placeholder} />}</FormattedMessage><input style={{width: '38%'}} value={(this.state.arraytable[5].replace(/"/g, '')).split("T21")[0]} /> </td>
 <td><FormattedMessage id='dateff' >{placeholder => <input type='text' value={placeholder} />}</FormattedMessage><input style={{width: '38%'}} value={(this.state.arraytable[6].replace(/"/g, '')).split("T21")[0]} /> </td>
 <td><button style={{display: 'inline-block',width: '100%',height: '40px'}} ><FormattedMessage id='projedit' /></button></td>
-<td><button onClick={()=>this.generateSubproject(idproj,subcropData,subatdData,subseasonData,this.state.arraytable[4],this.state.arraytable[5],this.state.arraytable[6],idproj,idid)} style={{display: 'inline-block',width: '100%',height: '40px'}} ><FormattedMessage id='generate' /></button></td>
 </table>
 </table></div></div>}
 								atd={<div style={{height:"550px"}}><FunctionalDataGrid onClick={()=>alert(';l;l')} columns={atdcolumns} data={subatdData}/><td className="subbutton"><select id="areaselect" style={{width: '40%'}} ></select><button style={{background: '#5B9138'}} onClick={()=>this.insertarea(idproj,idid)}>+</button><button style={{background: '#ff0000'}} onClick={()=>this.delarea(idproj)}>-</button></td></div>}
@@ -2139,6 +2206,45 @@ rendercroptable()
 						
 								</div>
 								</div>,
+								footer:              <div className='lower'>
+								     <Example
+                                        render={()=>this.subprojectview(idproj,idid)}
+                                        subcrop={(this.state.arraytable[8].replace(/"/g, '')).split(",")}
+                                        subarea={(this.state.arraytable[9].replace(/"/g, '')).split(",")}
+                                        subseason={(this.state.arraytable[10].replace(/"/g, '')).split(",")}
+                                        curcol={exampleData}
+									   curs={this.state.arraytable[3]}
+                                        curt="subproject"
+                                        textnum={()=>this.textnumget()}
+                                        truestatus="input"
+                                        text=<FormattedMessage id='inputsubp' />
+                                    status=<FormattedMessage id='inputtxt' />
+                                    />
+                                    <Example
+                                        render={()=>this.subprojectview(idproj,idid)}
+                                        subcrop={(this.state.arraytable[8].replace(/"/g, '')).split(",")}
+                                        subarea={(this.state.arraytable[9].replace(/"/g, '')).split(",")}
+										subseason={(this.state.arraytable[10].replace(/"/g, '')).split(",")}
+                                        subdiv={(this.state.arraytable[8].replace(/"/g, '')).split(",")}
+                                        curcol={exampleData}
+									   curs={this.state.arraytable[3]}
+                                        curt="subproject"
+                                        textnum={()=>this.textnumget()}
+                                        truestatus="update"
+                                        text=<FormattedMessage id='updatesubp' />
+                                    status=<FormattedMessage id='updatetxt' />
+                                    />
+                            <button style={{display: 'inline-block',width: '10%',height: '50px'}} onClick={() => this.delete()}>
+                                <FormattedMessage id='deletestr' />
+                            </button>
+                            <button style={{display: 'inline-block',width: '10%'}} >
+                                <CSVLink style={{color:'#2B3138'}}  data={this.csvreport()}    filename={'subs'+this.state.arraytable[3]+".csv"}><FormattedMessage id='uploadcsv' /></CSVLink>
+                            </button>
+                            <button style={{display: 'inline-block',width: '10%'}} onClick={()=>this.xslsreport()}><FormattedMessage id='uploadxsls' />
+                            </button>
+                            <button style={{display: 'inline-block',width: '10%'}} onClick={()=>document.getElementById('fileload').click()}><FormattedMessage id='load' />
+                            </button>
+							</div>
 
                                
                             }
@@ -2659,14 +2765,15 @@ return select.click();
                     }
                 }
 
-                var select='';// = document.getElementById("cropselect");
-              //  select.innerHTML = "";
-			
+                var selectcrop='';
                 for(var i = 0; i < regarcolFK.length; i++) {
                     var opt = regarcolFK[i];
-                    select += "<option value=\"" + opt + "\">" + opt + "</option>";
+                    selectcrop += "<option value=\"" + opt + "\">" + opt + "</option>";
                 }
-				return select;
+			//	cropselect
+			var div = document.getElementById('cropselect');
+			div.innerHTML=selectcrop;
+				//return selectcrop;
             });
     }
 
@@ -2694,12 +2801,13 @@ return select.click();
                     }
                 }
 
-                var select = document.getElementById("seasonselect");
-                select.innerHTML = "";
+                var seasonbox='';
                 for(var i = 0; i < regarcolFK.length; i++) {
                     var opt = regarcolFK[i];
-                    select.innerHTML += "<option value=\"" + opt + "\">" + opt + "</option>";
+                    seasonbox += "<option value=\"" + opt + "\">" + opt + "</option>";
                 }
+				var div3 = document.getElementById("seasonselect");
+                div3.innerHTML = seasonbox;
             });
     }
 
@@ -2727,15 +2835,12 @@ return select.click();
                     }
                 }
 
-                var select = document.getElementById("areaselect");
-                select.innerHTML = "";
+                var div2 = document.getElementById("areaselect");
+                div2.innerHTML = "";
                 for(var i = 0; i < regarcolFK.length; i++) {
                     var opt = regarcolFK[i];
-                    select.innerHTML += "<option value=\"" + opt + "\">" + opt + "</option>";
+                    div2.innerHTML += "<option value=\"" + opt + "\">" + opt + "</option>";
                 }
-				new MultipleSelect('#areaselect', {
-  placeholder: 'Select Language'
-})
             });
     }
 
@@ -2834,7 +2939,7 @@ this.setState((state) => {
 						curs:'',
 						tablevie:'',
 						curt:currentDistrict,
-						footer:              <div className='lower'>
+					footer:              <div className='lower'>
 						 <Example
                                 render={(name,id,obj)=>this.updateTree(name,id,obj)}
                                 curcol={exampleData}
@@ -2874,7 +2979,7 @@ this.setState((state) => {
 	}
 
     render() {
-		
+	
         return (
             <div style={{verticalAlign: 'top'}}>
 				
@@ -2893,6 +2998,7 @@ this.setState((state) => {
 						<h1>{this.state.curs}{this.state.curt}</h1>
 							<div id='func_grid' style={{height: '100%'}}>
 								 <FunctionalDataGrid onClick={()=>alert(';l;l')} columns={columns} data={gridData} enableColumnsShowAndHide={true}/> 
+								 <div className='lvlcount'>{atdlvlcount}</div>
 							</div>	 
                             <div id='tablecels' className='tablecels' >{this.renderSquare()}</div>
                             {this.state.footer}
