@@ -1,5 +1,5 @@
 let localhostm='45.89.26.151';
-function FKcombo(curs,curt,curcol,status,row,textnum) {
+function FKcombo(curs,curt,curcol,status,row,textnum,subcrop,subarea,subseason) {
     fetch('http://'+localhostm+':3001/FK/:'+curs+'.:'+curt)
         .then(response =>  response.text())
         .then(data => {
@@ -33,6 +33,7 @@ function FKcombo(curs,curt,curcol,status,row,textnum) {
                 var div = document.getElementById('modal_content'+status);
                 div.innerHTML="";
                 let fori=0;
+				
                 for (let i=fori; i< curcol.length;i++)
                 {
                     let selectbool=0;
@@ -43,6 +44,21 @@ function FKcombo(curs,curt,curcol,status,row,textnum) {
                            newcombobox(regarcol[j],curs,status);
                         }
 
+                    }
+					                   if (curcol[i]=='id_area') {
+                        selectbool = 1;
+                        newcombobox('NO',"id_area",status,subarea);
+                    }
+					
+                    if (curcol[i]=='crop') {
+                        selectbool = 1;
+						
+                        newcombobox('NO',"crop",status,subcrop);
+                    }
+                    if (curcol[i]=='season') {
+                        selectbool = 1;
+						
+                        newcombobox('NO',"season",status,subseason);
                     }
                     if (selectbool==0) {
                      if (status=="update")   {if (i==0) div.innerHTML += "<td>" + curcol[i] + "<input value=\"" + textnum + "\" disabled name=\"Names\" id=\"" + curcol[i] + status + "\"></td>";
@@ -140,10 +156,10 @@ function newcombobox(props,curs,status,keyar)
 }
 }
 
-function atdRows(curOb,status,textnum,row,curt)
+function atdRows(curOb,status,textnum,row,curt,subcrop,subarea,subseason)
 {
 	var	curcol=Object.keys(curOb);
-	if (curt.includes('##')) {curcol=Object.values(curOb); 
+	if (curt=='subproject') {curcol=Object.keys(curOb); 
 	var div = document.getElementById('modal_content'+status);
 	if ((status=="update")) {
 if (row!=null) {
@@ -151,7 +167,7 @@ if (row!=null) {
 
 if (div!=null) {
 	div.innerHTML="";
-FKcombo(curt.split('##')[1],curt.split('##')[0],curcol,status,row,row[curcol[0]]);
+FKcombo(curt.split('##')[1],curt.split('##')[0],curcol,status,row,row[curcol[0]],subcrop,subarea,subseason);
 }
 }
 }
@@ -160,7 +176,30 @@ else {
 if (div!=null) {
 div.innerHTML="";
 console.log(row);
-FKcombo(curt.split('##')[1],curt.split('##')[0],curcol,status,row);
+FKcombo(curt.split('##')[1],curt.split('##')[0],curcol,status,row,0,subcrop,subarea,subseason);
+
+}
+}
+	
+	}
+	if (curt.includes('##')) {curcol=Object.values(curOb); 
+	var div = document.getElementById('modal_content'+status);
+	if ((status=="update")) {
+if (row!=null) {
+
+
+if (div!=null) {
+	div.innerHTML="";
+FKcombo(curt.split('##')[1],curt.split('##')[0],curcol,status,row,row[curcol[0]],subcrop,subarea,subseason);
+}
+}
+}
+else {
+
+if (div!=null) {
+div.innerHTML="";
+console.log(row);
+FKcombo(curt.split('##')[1],curt.split('##')[0],curcol,status,row,subcrop,subarea,subseason);
 
 }
 }
@@ -227,7 +266,7 @@ const Modal = props => {
                 <hr/>
                 <h2>{props.curs+props.curt}</h2>
                 <hr/>
-<table id={'modal_content'+props.truestatus}>{atdRows(props.curcol,props.truestatus,props.textnum,props.row,props.curt)}</table>
+<table id={'modal_content'+props.truestatus}>{atdRows(props.curcol,props.truestatus,props.textnum,props.row,props.curt,props.subcrop,props.subarea,props.subseason)}</table>
                 <hr/>
                 <button style={{width: '20%',height: '50px'}} onClick={()=>handleListSubmit (props)}>{props.text}</button>
                 {props.children}
@@ -263,6 +302,10 @@ let curt=props.curt;
 
 function info_area_insert(textrow,props)
 { 
+if (props.curt.includes('roject'))
+{
+	alert('vstavka pr');
+}
 if (props.curt.includes('##')) 
 { 
 	    fetch('http://'+localhostm+':3001/insert/:'+textrow+'.:'+props.curt.split('##')[0]+'.:'+props.curt.split('##')[1], {
@@ -313,7 +356,10 @@ if (props.curt.includes('##'))
 }}
 
 function update(textrow,props)
+{if (props.curt.includes('roject'))
 {
+	alert('update pr');
+}
 	if (props.curt.includes('##')) {
 			var	curcol=Object.values(props.curcol);
 			var targetUpdate=props.row[curcol[0]] ;
